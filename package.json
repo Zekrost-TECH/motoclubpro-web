@@ -1,6 +1,6 @@
 {
   "name": "motoclubpro-web",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -8,7 +8,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@deijose/nix-js": "^1.7.9"
+    "@deijose/nix-js": "^2.5.0",
+    "@deijose/nix-query": "^1.3.4",
+    "@types/node": "^26.0.0",
+    "chart.js": "^4.5.1",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "ionicons": "^8.0.13"
   },
   "devDependencies": {
     "typescript": "~5.9.3",
