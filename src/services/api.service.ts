@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import type { Club, User, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment } from '../types';
+import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment } from '../types';
 import { router } from '../router';
 
 const BASE_URL = (import.meta as any).env.VITE_WEB_API_URL || 'http://localhost:3000/api/v1';
@@ -131,6 +131,40 @@ function mapWaypoint(wp: any): Waypoint {
     };
 }
 
+function mapUser(data: any): User {
+    const ecParts = [data.ecName, data.ecPhone, data.ecRelationship].filter(Boolean);
+    return {
+        id: data.id,
+        email: data.email || '',
+        name: data.name || '',
+        nickname: data.nickname,
+        phone: data.phone,
+        role: data.role || 'piloto',
+        avatar: data.avatar_url || data.avatar,
+        bloodType: data.bloodType || data.blood_type,
+        allergies: data.allergies,
+        medicalConditions: data.medicalConditions || data.medical_conditions,
+        emergencyContact: ecParts.length ? ecParts.join(' · ') : undefined,
+        createdAt: data.createdAt || data.created_at || data.joinDate || data.join_date,
+    };
+}
+
+function mapMember(data: any): Member {
+    return {
+        id: data.id,
+        userId: data.user_id ?? data.userId ?? '',
+        clubId: data.club_id ?? data.clubId ?? '',
+        role: data.role || 'piloto',
+        name: data.name || '',
+        email: data.email || '',
+        avatar: data.avatar_url || data.avatar,
+        skillLevel: data.skill_level ?? data.skillLevel,
+        riderLevel: data.rider_level ?? data.riderLevel,
+        joinedAt: data.joined_at ?? data.joinedAt,
+        createdAt: data.created_at ?? data.createdAt,
+    };
+}
+
 function mapAttendee(data: any): EventAttendee {
     return {
         userId: data.user_id ?? data.userId,
@@ -184,7 +218,7 @@ export const api = {
     },
     users: {
         list: () => request<User[]>('/users'),
-        get: (id: string) => request<User>(`/users/${id}`),
+        get: (id: string) => request<User>(`/users/${id}`).then(mapUser),
         update: (id: string, data: Partial<User>) =>
             request<User>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
         create: (data: Partial<User>) =>
@@ -194,11 +228,11 @@ export const api = {
         list: () => request<Club[]>('/clubs'),
         get: (id: string) => request<Club>(`/clubs/${id}`),
         getBySlug: (slug: string) => request<Club>(`/clubs/${slug}`),
-        getMembers: (id: string) => request<User[]>(`/clubs/${id}/members`),
-        inviteMember: (id: string, email: string, role: string, skillLevel?: string) =>
+        getMembers: (id: string) => request<Member[]>(`/clubs/${id}/members`).then((list) => (list || []).map(mapMember)),
+        inviteMember: (id: string, email: string, role: string) =>
             request<void>(`/clubs/${id}/members`, {
                 method: 'POST',
-                body: JSON.stringify({ email, role, skillLevel }),
+                body: JSON.stringify({ email, role }),
             }),
         removeMember: (clubId: string, userId: string) =>
             request<void>(`/clubs/${clubId}/members/${userId}`, { method: 'DELETE' }),

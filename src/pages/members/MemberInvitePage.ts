@@ -7,15 +7,13 @@ import { showToast } from '../../components/Toast';
 
 export class MemberInvitePage extends NixComponent {
     email = signal('');
-    name = signal('');
     role = signal('piloto');
-    skillLevel = signal('novato');
     private router = router;
 
     inviteMember = createCommand(
         'members/invite',
-        async (payload: { clubId: string; email: string; role: string; skillLevel?: string }) =>
-            api.clubs.inviteMember(payload.clubId, payload.email, payload.role, payload.skillLevel),
+        async (payload: { clubId: string; email: string; role: string }) =>
+            api.clubs.inviteMember(payload.clubId, payload.email, payload.role),
         {
             mode: 'latest',
             onSuccess: () => invalidateQueries('members/list'),
@@ -33,7 +31,6 @@ export class MemberInvitePage extends NixComponent {
                 clubId: activeClub.value.id,
                 email: this.email.value,
                 role: this.role.value,
-                skillLevel: this.skillLevel.value,
             });
             showToast('Invitación enviada', 'success');
             this.router.navigate('/members');
@@ -58,25 +55,11 @@ export class MemberInvitePage extends NixComponent {
                     <input type="email" value=${() => this.email.value} @input=${(e: any) => this.email.update(() => e.target.value)} placeholder="piloto@email.com" required />
                 </div>
                 <div class="form-group">
-                    <label>Nombre</label>
-                    <input type="text" value=${() => this.name.value} @input=${(e: any) => this.name.update(() => e.target.value)} placeholder="Nombre completo" />
-                </div>
-                <div class="form-group">
                     <label>Rol</label>
                     <select value=${() => this.role.value} @change=${(e: any) => this.role.update(() => e.target.value)}>
                         <option value="piloto">Piloto</option>
                         <option value="lider">Líder</option>
                         <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Nivel de Manejo</label>
-                    <select value=${() => this.skillLevel.value} @change=${(e: any) => this.skillLevel.update(() => e.target.value)}>
-                        <option value="novato">Novato</option>
-                        <option value="basico">Básico</option>
-                        <option value="intermedio">Intermedio</option>
-                        <option value="avanzado">Avanzado</option>
-                        <option value="experto">Experto</option>
                     </select>
                 </div>
             </div>

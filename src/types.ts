@@ -29,6 +29,20 @@ export interface User {
     createdAt: string;
 }
 
+export interface Member {
+    id: string;
+    userId: string;
+    clubId: string;
+    role: ClubRole;
+    name: string;
+    email: string;
+    avatar?: string;
+    skillLevel?: string;
+    riderLevel?: string;
+    joinedAt?: string;
+    createdAt?: string;
+}
+
 export interface Event {
     id: string;
     title: string;

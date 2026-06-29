@@ -6,6 +6,7 @@ import { activeClub } from '../../stores/clubs.store';
 import { SkeletonTable } from '../../components/Skeleton';
 import { formatEnum } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
+import type { Member } from '../../types';
 
 export class MembersListPage extends NixComponent {
     search = createDebounced('', 300);
@@ -33,12 +34,12 @@ export class MembersListPage extends NixComponent {
         return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
     }
 
-    filtered() {
-        let list = this.membersQuery.data.value || [];
-        if (this.roleFilter.value) list = list.filter((m: any) => m.role === this.roleFilter.value);
+    filtered(): Member[] {
+        let list = (this.membersQuery.data.value || []) as Member[];
+        if (this.roleFilter.value) list = list.filter((m) => m.role === this.roleFilter.value);
         if (this.search.commit.value) {
             const q = this.search.commit.value.toLowerCase();
-            list = list.filter((m: any) => m.name?.toLowerCase().includes(q) || m.email?.toLowerCase().includes(q));
+            list = list.filter((m) => m.name?.toLowerCase().includes(q) || m.email?.toLowerCase().includes(q));
         }
         return list;
     }
@@ -80,8 +81,8 @@ export class MembersListPage extends NixComponent {
                             <tr><th>Miembro</th><th>Email</th><th>Rol</th><th>Nivel</th><th>Ingreso</th><th></th></tr>
                         </thead>
                         <tbody>
-                            ${this.filtered().map((m: any) => html`
-                                <tr @click=${() => this.router.navigate(`/members/${m.id}`)}>
+                            ${this.filtered().map((m: Member) => html`
+                                <tr @click=${() => this.router.navigate(`/members/${m.userId}`)}>
                                     <td>
                                         <div style="display:flex;align-items:center;gap:var(--mc-space-3);">
                                             <div class="avatar avatar-sm">${this.getInitials(m.name || m.email)}</div>
@@ -90,11 +91,11 @@ export class MembersListPage extends NixComponent {
                                     </td>
                                     <td>${m.email}</td>
                                     <td><span class="badge badge-${m.role}">${formatEnum(m.role)}</span></td>
-                                    <td>${formatEnum(m.skillLevel || m.rider_level)}</td>
-                                    <td>${m.createdAt || m.joined_at ? new Date(m.createdAt || m.joined_at).toLocaleDateString('es-CO') : '-'}</td>
+                                    <td>${formatEnum(m.skillLevel || m.riderLevel || '')}</td>
+                                    <td>${m.createdAt || m.joinedAt ? new Date(m.createdAt || m.joinedAt || '').toLocaleDateString('es-CO') : '-'}</td>
                                     <td>
                                         <div class="actions">
-                                            <button class="btn-icon" @click.stop=${() => this.router.navigate(`/members/${m.id}`)} title="Ver perfil">
+                                            <button class="btn-icon" @click.stop=${() => this.router.navigate(`/members/${m.userId}`)} title="Ver perfil">
                                                 <ion-icon name="eye-outline"></ion-icon>
                                             </button>
                                         </div>
