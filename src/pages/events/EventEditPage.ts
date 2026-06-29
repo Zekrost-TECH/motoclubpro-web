@@ -33,8 +33,14 @@ export class EventEditPage extends NixComponent {
         }
     );
 
+    routesQuery = createQuery(
+        'routes/list',
+        () => api.routes.list(),
+        { staleTime: 60_000 }
+    );
+
     form = createForm(
-        { title: '', description: '', date: '', time: '', meetingPoint: '', difficulty: 'suave' as Event['difficulty'] },
+        { title: '', description: '', date: '', time: '', meetingPoint: '', difficulty: 'suave' as Event['difficulty'], routeId: '' },
         {
             validators: {
                 title: [required()],
@@ -59,6 +65,7 @@ export class EventEditPage extends NixComponent {
                         time: event.time,
                         meetingPoint: event.meetingPoint,
                         difficulty: event.difficulty,
+                        routeId: event.routeId || '',
                     });
                 }
             },
@@ -75,11 +82,11 @@ export class EventEditPage extends NixComponent {
         this.form.dispose();
     }
 
-    async handleSubmit(values: { title: string; description: string; date: string; time: string; meetingPoint: string; difficulty: Event['difficulty'] }) {
+    async handleSubmit(values: { title: string; description: string; date: string; time: string; meetingPoint: string; difficulty: Event['difficulty']; routeId: string }) {
         try {
             await this.updateEvent.executeAsync({
                 id: this.eventId,
-                data: values,
+                data: { ...values, routeId: values.routeId || undefined },
             });
             showToast('Rodada actualizada', 'success');
             this.router.back();
@@ -126,6 +133,13 @@ export class EventEditPage extends NixComponent {
                         <option value="off_road">Off Road</option>
                         <option value="viaje_largo">Viaje Largo</option>
                         <option value="expertos">Expertos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ruta</label>
+                    <select value=${() => this.form.fields.routeId.value.value} @change=${this.form.fields.routeId.onInput}>
+                        <option value="">Sin ruta</option>
+                        ${() => (this.routesQuery.data.value || []).map((r: any) => html`<option value=${r.id}>${r.name}</option>`)}
                     </select>
                 </div>
             </div>

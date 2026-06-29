@@ -117,6 +117,20 @@ function mapEventInput(data: Partial<Event>): any {
     return payload;
 }
 
+function mapWaypoint(wp: any): Waypoint {
+    const coords = wp.location?.coordinates;
+    return {
+        id: wp.id,
+        name: wp.name || '',
+        type: wp.type || 'parada',
+        lat: Array.isArray(coords) ? Number(coords[1]) || 0 : Number(wp.lat) || 0,
+        lng: Array.isArray(coords) ? Number(coords[0]) || 0 : Number(wp.lng) || 0,
+        sortOrder: wp.sortOrder ?? wp.sort_order ?? 0,
+        estimatedArrival: wp.estimatedArrival ?? wp.estimated_arrival,
+        notes: wp.notes,
+    };
+}
+
 function mapAttendee(data: any): EventAttendee {
     return {
         userId: data.user_id ?? data.userId,
@@ -229,6 +243,8 @@ export const api = {
         update: (id: string, data: Partial<Route>) =>
             request<Route>(`/routes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
         delete: (id: string) => request<void>(`/routes/${id}`, { method: 'DELETE' }),
+        waypoints: (id: string) =>
+            request<any[]>(`/routes/${id}/waypoints`).then((list) => (list || []).map(mapWaypoint)),
         addWaypoint: (id: string, wp: Partial<Waypoint>) =>
             request<Waypoint>(`/routes/${id}/waypoints`, {
                 method: 'POST',

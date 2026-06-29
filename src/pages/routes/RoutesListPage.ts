@@ -1,11 +1,12 @@
 import { router } from '../../router';
-import { html, NixComponent } from '@deijose/nix-js';
+import { html, NixComponent, repeat } from '@deijose/nix-js';
 import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { openConfirm } from '../../components/ConfirmModal';
 import { SkeletonCard } from '../../components/Skeleton';
 import { formatEnum } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
+import type { Route } from '../../types';
 import { activeClub } from '../../stores/clubs.store';
 
 export class RoutesListPage extends NixComponent {
@@ -34,11 +35,11 @@ export class RoutesListPage extends NixComponent {
         document.title = 'Rutas | MotoClub Pro';
     }
 
-    filtered() {
-        let list = this.routesQuery.data.value || [];
+    filtered(): Route[] {
+        let list = (this.routesQuery.data.value || []) as Route[];
         if (this.search.commit.value) {
             const q = this.search.commit.value.toLowerCase();
-            list = list.filter((r: any) => r.name.toLowerCase().includes(q));
+            list = list.filter((r) => r.name.toLowerCase().includes(q));
         }
         return list;
     }
@@ -85,18 +86,21 @@ export class RoutesListPage extends NixComponent {
                     ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar rutas</div>`
                     : html`
                 <div class="cards-grid">
-                    ${this.filtered().map((r: any) => html`
+                    ${() => {
+                            const list = this.filtered();
+                            if (!list.length) return html`<div class="empty"><ion-icon name="map-outline" class="empty-icon"></ion-icon><h4>No se encontraron rutas</h4><p>Crea la primera ruta del club.</p></div>`;
+                            return repeat(list, (r: Route) => r.id, (r: Route) => html`
                         <div class="card" @click=${() => this.router.navigate(`/routes/${r.id}`)}>
                             <div class="card-header">
                                 <h3>${r.name}</h3>
-                                <span class="badge ${this.difficultyBadge(r.difficulty)}">${formatEnum(r.difficulty)}</span>
+                                <span class=${`badge ${this.difficultyBadge(r.difficulty)}`}>${formatEnum(r.difficulty)}</span>
                             </div>
                             <div class="card-body">
                                 <p>${r.description || 'Sin descripción'}</p>
                                 <div class="card-meta">
                                     <span><ion-icon name="map-outline"></ion-icon> ${r.distance || r.distanceKm || 0} km</span>
                                     <span><ion-icon name="time-outline"></ion-icon> ${r.estimatedTime || '-'}</span>
-                                    <span><ion-icon name="location-outline"></ion-icon> ${r.waypoints?.length || 0} waypoints</span>
+                                    <span><ion-icon name="location-outline"></ion-icon> ${r.waypointsCount ?? r.waypoints_count ?? 0} paradas</span>
                                 </div>
                             </div>
                             <div class="card-footer">
@@ -108,15 +112,9 @@ export class RoutesListPage extends NixComponent {
                                 </button>
                             </div>
                         </div>
-                    `)}
+                    `);
+                        }}
                 </div>
-                ${!this.filtered().length ? html`
-                    <div class="empty">
-                        <ion-icon name="map-outline" class="empty-icon"></ion-icon>
-                        <h4>No se encontraron rutas</h4>
-                        <p>Crea la primera ruta del club.</p>
-                    </div>
-                ` : ''}
             `}
     `;
     }

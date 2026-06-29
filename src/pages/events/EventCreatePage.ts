@@ -1,6 +1,6 @@
 import { router } from '../../router';
 import { html, signal, NixComponent } from '@deijose/nix-js';
-import { createCommand, invalidateQueries } from '@deijose/nix-query';
+import { createCommand, createQuery, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import type { Event } from '../../types';
@@ -12,7 +12,14 @@ export class EventCreatePage extends NixComponent {
     time = signal('');
     meetingPoint = signal('');
     difficulty = signal('suave');
+    routeId = signal('');
     private router = router;
+
+    routesQuery = createQuery(
+        'routes/list',
+        () => api.routes.list(),
+        { staleTime: 60_000 }
+    );
 
     createEvent = createCommand(
         'events/create',
@@ -36,6 +43,7 @@ export class EventCreatePage extends NixComponent {
                 time: this.time.value,
                 meetingPoint: this.meetingPoint.value,
                 difficulty: this.difficulty.value as any,
+                routeId: this.routeId.value || undefined,
             });
             showToast('Rodada creada exitosamente', 'success');
             this.router.navigate('/events');
@@ -74,6 +82,13 @@ export class EventCreatePage extends NixComponent {
                         <option value="off_road">Off Road</option>
                         <option value="viaje_largo">Viaje Largo</option>
                         <option value="expertos">Expertos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ruta</label>
+                    <select value=${() => this.routeId.value} @change=${(e: any) => this.routeId.update(() => e.target.value)}>
+                        <option value="">Sin ruta</option>
+                        ${() => (this.routesQuery.data.value || []).map((r: any) => html`<option value=${r.id}>${r.name}</option>`)}
                     </select>
                 </div>
             </div>

@@ -76,10 +76,13 @@ export interface Route {
     description: string;
     difficulty: string;
     distance: number;
+    distanceKm?: number;
     estimatedTime: string;
     elevationMin: number;
     elevationMax: number;
     waypoints: Waypoint[];
+    waypointsCount?: number;
+    waypoints_count?: number;
     createdAt: string;
 }
 

@@ -128,7 +128,7 @@ export class RouteEditPage extends NixComponent {
         <div class="page-header">
             <div class="page-header-left">
                 <h1 class="page-title">Editar Ruta</h1>
-                <p class="page-subtitle">Actualiza la ruta y sus waypoints</p>
+                <p class="page-subtitle">Actualiza la ruta y sus paradas</p>
             </div>
         </div>
         ${() => this.routeQuery.status.value === 'pending' && !this.routeQuery.data.value
@@ -167,12 +167,12 @@ export class RouteEditPage extends NixComponent {
                 <label>Descripción</label>
                 <textarea rows="3" value=${() => this.form.fields.description.value.value} @input=${this.form.fields.description.onInput}></textarea>
             </div>
-            <h3 class="form-section-title" style="margin-top:var(--mc-space-6);">Waypoints</h3>
+            <h3 class="form-section-title" style="margin-top:var(--mc-space-6);">Paradas</h3>
             <div class="form-group">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--mc-space-3);">
                     <label>Puntos del recorrido</label>
                     <button type="button" class="btn btn-sm btn-secondary" @click=${() => this.addWaypoint()}>
-                        <ion-icon name="add-outline"></ion-icon> Agregar Waypoint
+                        <ion-icon name="add-outline"></ion-icon> Agregar Parada
                     </button>
                 </div>
                 ${() => this.waypoints.value.map((wp: any, idx: number) => html`
@@ -206,7 +206,7 @@ export class RouteEditPage extends NixComponent {
                         </div>
                     </div>
                 `)}
-                ${() => !this.waypoints.value.length ? html`<div class="empty"><ion-icon name="location-outline" class="empty-icon"></ion-icon><h4>No hay waypoints</h4><p>Agrega uno para definir el recorrido.</p></div>` : ''}
+                ${() => !this.waypoints.value.length ? html`<div class="empty"><ion-icon name="location-outline" class="empty-icon"></ion-icon><h4>No hay paradas</h4><p>Agrega una para definir el recorrido.</p></div>` : ''}
             </div>
             <div class="form-actions">
                 <button type="button" class="btn btn-secondary" @click=${() => this.router.back()}>Cancelar</button>

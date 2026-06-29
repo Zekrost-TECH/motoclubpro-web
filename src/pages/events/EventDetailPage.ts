@@ -2,7 +2,7 @@ import { router } from '../../router';
 import { html, NixComponent, createForm, repeat } from '@deijose/nix-js';
 import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
-import type { Event as EventModel, EventAttendee, ChecklistItem, InventoryItem, RideRole } from '../../types';
+import type { Event as EventModel, EventAttendee, ChecklistItem, InventoryItem, RideRole, Route } from '../../types';
 import { showToast } from '../../components/Toast';
 import { openConfirm } from '../../components/ConfirmModal';
 import { formatEnum } from '../../utils/labels';
@@ -69,6 +69,11 @@ export class EventDetailPage extends NixComponent {
             params: () => ({ id: this.router.params.value?.id || '' }),
             staleTime: 30_000,
         }
+    );
+    routesQuery = createQuery(
+        'routes/list',
+        () => api.routes.list(),
+        { staleTime: 60_000 }
     );
     addInventory = createCommand(
         'events/inventory/add',
@@ -140,6 +145,9 @@ export class EventDetailPage extends NixComponent {
     get attendees() { return this.attendeesQuery.data.value as EventAttendee[] || []; }
     get checklist() { return this.checklistQuery.data.value as ChecklistItem[] || []; }
     get inventory() { return this.inventoryQuery.data.value as InventoryItem[] || []; }
+    get eventRoute() {
+        return (this.routesQuery.data.value || []).find((r: Route) => r.id === this.event?.routeId) || null;
+    }
 
     async addInventoryItem() {
         try {
@@ -263,6 +271,27 @@ export class EventDetailPage extends NixComponent {
                                 <div class="stat-item"><span>Estado</span><strong><span class=${`badge badge-${e.status}`}>${formatEnum(e.status)}</span></strong></div>
                             </div>
                             <p style="margin-top:var(--mc-space-4);color:var(--mc-text-secondary);">${e.description || 'Sin descripción'}</p>
+                        </div>
+                    </div>
+                    <div class="dashboard-card">
+                        <div class="card-header"><h3><ion-icon name="map-outline"></ion-icon> Ruta</h3></div>
+                        <div class="card-body">
+                            ${() => {
+                        const route = this.eventRoute;
+                        if (!route) return html`<div class="empty"><ion-icon name="map-outline" class="empty-icon"></ion-icon><h4>Sin ruta asociada</h4></div>`;
+                        return html`
+                                    <div class="stat-list">
+                                        <div class="stat-item"><span>Nombre</span><strong>${route.name}</strong></div>
+                                        <div class="stat-item"><span>Distancia</span><strong>${route.distance || route.distanceKm || 0} km</strong></div>
+                                        <div class="stat-item"><span>Dificultad</span><strong><span class="badge ${this.difficultyBadge(route.difficulty)}">${formatEnum(route.difficulty)}</span></strong></div>
+                                        <div class="stat-item"><span>Paradas</span><strong>${route.waypointsCount ?? route.waypoints_count ?? 0}</strong></div>
+                                    </div>
+                                    <p style="margin-top:var(--mc-space-4);color:var(--mc-text-secondary);">${route.description || 'Sin descripción'}</p>
+                                    <div style="margin-top:var(--mc-space-4);">
+                                        <button class="btn btn-sm btn-secondary" @click=${() => this.router.navigate(`/routes/${route.id}`)}>Ver Ruta</button>
+                                    </div>
+                                `;
+                    }}
                         </div>
                     </div>
                     <div class="dashboard-card">

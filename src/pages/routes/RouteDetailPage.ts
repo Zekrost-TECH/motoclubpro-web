@@ -1,8 +1,8 @@
 import { router } from '../../router';
-import { html, NixComponent } from '@deijose/nix-js';
+import { html, NixComponent, repeat } from '@deijose/nix-js';
 import { createQuery } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
-import type { Route } from '../../types';
+import type { Route, Waypoint } from '../../types';
 import { MapView } from '../../components/MapView';
 import { formatEnum } from '../../utils/labels';
 
@@ -22,11 +22,24 @@ export class RouteDetailPage extends NixComponent {
         }
     );
 
+    waypointsQuery = createQuery(
+        'routes/waypoints',
+        async ({ id }: { id: string }) => {
+            if (!id) return [];
+            return api.routes.waypoints(id);
+        },
+        {
+            params: () => ({ id: this.router.params.value?.id || '' }),
+            staleTime: 30_000,
+        }
+    );
+
     onMount() {
         document.title = 'Detalle de Ruta | MotoClub Pro';
     }
 
     get route() { return this.routeQuery.data.value as Route | null; }
+    get waypoints() { return (this.waypointsQuery.data.value || []) as Waypoint[]; }
 
     difficultyBadge(difficulty: string): string {
         switch (difficulty) {
@@ -57,7 +70,7 @@ export class RouteDetailPage extends NixComponent {
         ${() => {
                 const r = this.route;
                 if (!r) return html`<div class="empty"><ion-icon name="map-outline" class="empty-icon"></ion-icon><h4>Cargando...</h4></div>`;
-                const waypoints = (r.waypoints || []).map((wp: any) => ({
+                const waypoints = this.waypoints.map((wp) => ({
                     lat: Number(wp.lat) || 0,
                     lng: Number(wp.lng) || 0,
                     name: wp.name || '',
@@ -66,7 +79,7 @@ export class RouteDetailPage extends NixComponent {
                 <div class="dashboard-card" style="margin-bottom:var(--mc-space-6);overflow:hidden;">
                     <div class="card-header"><h3><ion-icon name="map-outline"></ion-icon> Mapa de la Ruta</h3></div>
                     <div class="card-body" style="padding:0;">
-                        ${waypoints.length ? new MapView(waypoints) : html`<div class="empty"><ion-icon name="map-outline" class="empty-icon"></ion-icon><h4>Sin waypoints para mostrar</h4></div>`}
+                        ${waypoints.length ? new MapView(waypoints) : html`<div class="empty"><ion-icon name="map-outline" class="empty-icon"></ion-icon><h4>Sin paradas para mostrar</h4></div>`}
                     </div>
                 </div>
                 <div class="dashboard-grid">
@@ -84,16 +97,16 @@ export class RouteDetailPage extends NixComponent {
                         </div>
                     </div>
                     <div class="dashboard-card">
-                        <div class="card-header"><h3><ion-icon name="location-outline"></ion-icon> Waypoints (${r.waypoints.length || 0})</h3></div>
+                        <div class="card-header"><h3><ion-icon name="location-outline"></ion-icon> Paradas (${this.waypoints.length || 0})</h3></div>
                         <div class="card-body">
                             <div class="data-table-wrapper">
                                 <table class="data-table">
                                     <thead><tr><th>Orden</th><th>Nombre</th><th>Tipo</th><th>Coordenadas</th></tr></thead>
                                     <tbody>
                                         ${() => {
-                        const wps = r.waypoints || [];
-                        if (!wps.length) return html`<tr><td colspan="4" class="empty">Sin waypoints registrados.</td></tr>`;
-                        return wps.map((wp: any, idx: number) => html`
+                        const wps = this.waypoints;
+                        if (!wps.length) return html`<tr><td colspan="4" class="empty">Sin paradas registradas.</td></tr>`;
+                        return repeat(wps, (wp: Waypoint) => wp.id ?? `${wp.lat}-${wp.lng}`, (wp: Waypoint, idx: number) => html`
                                                 <tr>
                                                     <td>${idx + 1}</td>
                                                     <td><strong>${wp.name}</strong></td>
