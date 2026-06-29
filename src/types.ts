@@ -27,6 +27,7 @@ export interface User {
     medicalConditions?: string;
     emergencyContact?: string;
     createdAt: string;
+    motorcycle?: Motorcycle;
 }
 
 export interface Member {
@@ -117,6 +118,8 @@ export interface SupportPoint {
     type: string;
     address: string;
     city: string;
+    phone?: string;
+    hours?: string;
     lat: number;
     lng: number;
     verified: boolean;

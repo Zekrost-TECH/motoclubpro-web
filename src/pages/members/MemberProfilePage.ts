@@ -1,13 +1,11 @@
 import { router } from '../../router';
-import { html, signal, NixComponent } from '@deijose/nix-js';
+import { html, NixComponent } from '@deijose/nix-js';
 import { createQuery } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
-import type { User } from '../../types';
+import type { User, Motorcycle } from '../../types';
 
 export class MemberProfilePage extends NixComponent {
     private router = router;
-
-    motos = signal<any[]>([]);
 
     userQuery = createQuery(
         'members/profile',
@@ -26,6 +24,7 @@ export class MemberProfilePage extends NixComponent {
     }
 
     get user() { return this.userQuery.data.value as User | null; }
+    get motorcycles(): Motorcycle[] { return this.user?.motorcycle ? [this.user.motorcycle] : []; }
 
     getInitials(name?: string): string {
         if (!name) return '?';
@@ -73,15 +72,26 @@ export class MemberProfilePage extends NixComponent {
                         <div class="card-header"><h3><ion-icon name="bicycle-outline"></ion-icon> Motocicletas</h3></div>
                         <div class="card-body">
                             ${() => {
-                        const list = this.motos.value || [];
-                        if (!list.length) return html`<div class="empty"><ion-icon name="bicycle-outline" class="empty-icon"></ion-icon><h4>Sin motos registradas</h4></div>`;
-                        return list.map((m: any) => html`
-                                    <div class="list-item">
+                        const m = this.motorcycles[0];
+                        if (!m) return html`<div class="empty"><ion-icon name="bicycle-outline" class="empty-icon"></ion-icon><h4>Sin motos registradas</h4></div>`;
+                        return html`
+                            <div class="motorcycle-card">
+                                <div class="motorcycle-header">
+                                    <div class="motorcycle-icon"><ion-icon name="bicycle-outline"></ion-icon></div>
+                                    <div>
                                         <h4>${m.brand} ${m.model}</h4>
-                                        <p>${m.cc}cc · ${m.color} · Placa: ${m.plate}</p>
-                                        <p>Km Actual: ${m.currentKm} · Próximo servicio: ${m.nextServiceKm || '-'} km</p>
+                                        <p class="text-muted">${m.year ? m.year + ' · ' : ''}${m.cc}cc · ${m.color}</p>
                                     </div>
-                                `);
+                                    <span class="motorcycle-plate">${m.plate}</span>
+                                </div>
+                                <div class="motorcycle-stats">
+                                    <div class="motorcycle-stat"><span>Km actual</span><strong>${m.currentKm.toLocaleString('es-CO')}</strong></div>
+                                    <div class="motorcycle-stat"><span>Próximo servicio</span><strong>${m.nextServiceKm ? m.nextServiceKm.toLocaleString('es-CO') + ' km' : '-'}</strong></div>
+                                    <div class="motorcycle-stat"><span>SOAT</span><strong>${m.soatExpiry ? new Date(m.soatExpiry).toLocaleDateString('es-CO') : '-'}</strong></div>
+                                    <div class="motorcycle-stat"><span>Revisión técnica</span><strong>${m.techReviewExpiry ? new Date(m.techReviewExpiry).toLocaleDateString('es-CO') : '-'}</strong></div>
+                                </div>
+                            </div>
+                        `;
                     }}
                         </div>
                     </div>

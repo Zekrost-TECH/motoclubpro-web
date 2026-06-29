@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment } from '../types';
+import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle } from '../types';
 import { router } from '../router';
 
 const BASE_URL = (import.meta as any).env.VITE_WEB_API_URL || 'http://localhost:3000/api/v1';
@@ -146,6 +146,23 @@ function mapUser(data: any): User {
         medicalConditions: data.medicalConditions || data.medical_conditions,
         emergencyContact: ecParts.length ? ecParts.join(' · ') : undefined,
         createdAt: data.createdAt || data.created_at || data.joinDate || data.join_date,
+        motorcycle: data.motorcycle ? mapMotorcycle(data.motorcycle) : undefined,
+    };
+}
+
+function mapMotorcycle(data: any): Motorcycle {
+    return {
+        id: data.id,
+        brand: data.brand || '',
+        model: data.model || '',
+        year: data.year,
+        cc: data.cc || 0,
+        plate: data.plate || '',
+        color: data.color || '',
+        currentKm: data.currentKm ?? data.current_km ?? 0,
+        nextServiceKm: data.nextServiceKm ?? data.next_service_km,
+        soatExpiry: data.soatExpiry ?? data.soat_expiry,
+        techReviewExpiry: data.techReviewExpiry ?? data.tech_review_expiry,
     };
 }
 
@@ -301,8 +318,13 @@ export const api = {
             const qs = params ? '?' + new URLSearchParams(params as any).toString() : '';
             return request<SupportPoint[]>(`/support${qs}`);
         },
+        get: (id: string) => request<SupportPoint>(`/support/${id}`),
+        create: (data: Partial<SupportPoint>) =>
+            request<SupportPoint>('/support', { method: 'POST', body: JSON.stringify(data) }),
+        update: (id: string, data: Partial<SupportPoint>) =>
+            request<SupportPoint>(`/support/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
         verify: (id: string, status: boolean) =>
-            request<void>(`/support/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ verified: status }) }),
+            request<{ id: string; verified: boolean }>(`/support/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ verified: status }) }),
         reviews: (id: string) => request<any[]>(`/support/${id}/reviews`),
     },
     sos: {

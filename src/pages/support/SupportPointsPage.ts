@@ -1,11 +1,15 @@
-import { html, signal, NixComponent } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { router } from '../../router';
+import { html, signal, NixComponent, repeat } from '@deijose/nix-js';
+import { createQuery, createCommand, updateQueryData } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { SkeletonTable } from '../../components/Skeleton';
 import { formatEnum } from '../../utils/labels';
+import type { SupportPoint } from '../../types';
 
 export class SupportPointsPage extends NixComponent {
+    private router = router;
     typeFilter = signal('');
+    verifyingId = signal('');
 
     pointsQuery = createQuery('support-points/list', () => api.supportPoints.list(), { staleTime: 60_000 });
 
@@ -14,7 +18,13 @@ export class SupportPointsPage extends NixComponent {
         async (payload: { id: string; verified: boolean }) => api.supportPoints.verify(payload.id, payload.verified),
         {
             mode: 'latest',
-            onSuccess: () => invalidateQueries('support-points/list'),
+            onSuccess: (result) => {
+                updateQueryData<SupportPoint[]>('support-points/list', (current = []) =>
+                    current.map((p) => (p.id === result.id ? { ...p, verified: result.verified } : p))
+                );
+                this.verifyingId.update(() => '');
+            },
+            onError: () => this.verifyingId.update(() => ''),
         }
     );
 
@@ -24,11 +34,12 @@ export class SupportPointsPage extends NixComponent {
 
     filtered() {
         let list = this.pointsQuery.data.value || [];
-        if (this.typeFilter.value) list = list.filter((p: any) => p.type === this.typeFilter.value);
+        if (this.typeFilter.value) list = list.filter((p: SupportPoint) => p.type === this.typeFilter.value);
         return list;
     }
 
     verifyPoint(id: string, currentStatus: boolean) {
+        this.verifyingId.update(() => id);
         this.verifyPointCommand.execute({ id, verified: !currentStatus });
     }
 
@@ -51,6 +62,9 @@ export class SupportPointsPage extends NixComponent {
                 <option value="hospital">Hospital</option>
             </select>
             <div class="toolbar-spacer"></div>
+            <button class="btn btn-primary" @click=${() => this.router.navigate('/support/create')}>
+                <ion-icon name="add-outline"></ion-icon> Nuevo punto
+            </button>
             <span class="text-secondary">${() => this.filtered().length} puntos</span>
         </div>
         <div class="data-table-wrapper">
@@ -62,20 +76,35 @@ export class SupportPointsPage extends NixComponent {
                     <table class="data-table">
                         <thead><tr><th>Nombre</th><th>Tipo</th><th>Ciudad</th><th>Verificado</th><th>Rating</th><th></th></tr></thead>
                         <tbody>
-                            ${this.filtered().map((p: any) => html`
-                                <tr>
+                            ${() => {
+                            const list = this.filtered();
+                            if (!list.length) return html`<tr><td colspan="6" class="empty">No se encontraron puntos de apoyo.</td></tr>`;
+                            return repeat(list, (p: SupportPoint) => p.id, (p: SupportPoint) => {
+                                const badgeClass = p.verified ? 'badge-success' : 'badge-warning';
+                                const badgeText = p.verified ? 'Verificado' : 'Pendiente';
+                                const verifyBtnClass = p.verified ? 'btn-danger' : 'btn-primary';
+                                const verifyBtnText = p.verified ? 'Rechazar' : 'Verificar';
+                                const btnClass = `btn btn-sm ${verifyBtnClass}`;
+                                const isVerifying = () => this.verifyingId.value === p.id;
+                                return html`
+                                <tr @click=${() => this.router.navigate(`/support/${p.id}`)}>
                                     <td><strong>${p.name}</strong></td>
                                     <td>${formatEnum(p.type)}</td>
-                                    <td>${p.city}</td>
-                                    <td><span class="badge badge-${p.verified ? 'success' : 'warning'}">${p.verified ? 'Verificado' : 'Pendiente'}</span></td>
+                                    <td>${p.city || '-'}</td>
+                                    <td><span class=${`badge ${badgeClass}`}>${badgeText}</span></td>
                                     <td><ion-icon name="star" style="color:var(--mc-warning-500);"></ion-icon> ${p.rating || 0} (${p.reviewCount || 0})</td>
                                     <td>
-                                        <button class="btn btn-sm ${p.verified ? 'btn-danger' : 'btn-primary'}" @click=${() => this.verifyPoint(p.id, p.verified)} disabled=${() => this.verifyPointCommand.isPending.value}>
-                                            ${() => this.verifyPointCommand.isPending.value ? '...' : (p.verified ? 'Rechazar' : 'Verificar')}
+                                        <button class=${btnClass} @click.stop=${() => this.verifyPoint(p.id, p.verified)} disabled=${() => isVerifying()}>
+                                            ${() => isVerifying() ? '...' : verifyBtnText}
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary" @click.stop=${() => this.router.navigate(`/support/${p.id}/edit`)} title="Editar">
+                                            <ion-icon name="create-outline"></ion-icon>
                                         </button>
                                     </td>
                                 </tr>
-                            `)}
+                                `;
+                            });
+                        }}
                         </tbody>
                     </table>
                     ${!this.filtered().length ? html`
