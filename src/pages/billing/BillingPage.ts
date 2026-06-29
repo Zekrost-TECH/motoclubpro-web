@@ -1,9 +1,10 @@
-import { html, signal, NixComponent, effect } from '@deijose/nix-js';
+import { html, signal, NixComponent, effect, repeat } from '@deijose/nix-js';
 import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
 import { showToast } from '../../components/Toast';
 import { SkeletonCard } from '../../components/Skeleton';
+import type { Subscription, Payment } from '../../types';
 
 export class BillingPage extends NixComponent {
     nit = signal('');
@@ -14,8 +15,8 @@ export class BillingPage extends NixComponent {
     taxRegime = signal('');
     private _formLoaded = false;
 
-    subscriptionQuery = createQuery('billing/subscription', () => api.billing.subscription() as Promise<any>, { staleTime: 60_000 });
-    paymentsQuery = createQuery('billing/payments', () => api.billing.payments(), { staleTime: 60_000 });
+    subscriptionQuery = createQuery('billing/subscription', () => api.billing.subscription() as Promise<Subscription>, { staleTime: 60_000 });
+    paymentsQuery = createQuery('billing/payments', () => api.billing.payments() as Promise<Payment[]>, { staleTime: 60_000 });
     clubBillingQuery = createQuery(
         'club/billing',
         async ({ clubId }: { clubId: string }) => {
@@ -125,11 +126,11 @@ export class BillingPage extends NixComponent {
                                     </div>`;
                             return html`
                                     <div class="plan-info">
-                                        <div class="plan-name">${(s.plan || s.plan_id)?.toUpperCase()}</div>
-                                        <div class="plan-status"><span class="badge badge-${s.status}">${s.status}</span></div>
+                                        <div class="plan-name">${(s.plan)?.toUpperCase()}</div>
+                                        <div class="plan-status"><span class=${`badge badge-${s.status}`}>${s.status}</span></div>
                                         <div class="stat-list" style="margin-top:var(--mc-space-4);">
-                                            <div class="stat-item"><span>Vigencia</span><strong>${new Date(s.startDate || s.current_period_end).toLocaleDateString('es-CO')} — ${new Date(s.endDate || s.current_period_end).toLocaleDateString('es-CO')}</strong></div>
-                                            <div class="stat-item"><span>Miembros</span><strong>${s.currentMembers || 0} / ${s.memberLimit || '-'}</strong></div>
+                                            <div class="stat-item"><span>Vigencia</span><strong>${s.startDate ? new Date(s.startDate).toLocaleDateString('es-CO') : '-'} — ${s.endDate ? new Date(s.endDate).toLocaleDateString('es-CO') : '-'}</strong></div>
+                                            <div class="stat-item"><span>Miembros</span><strong>${s.currentMembers ?? 0} / ${s.memberLimit ?? '-'}</strong></div>
                                         </div>
                                     </div>
                                 `;
@@ -143,27 +144,27 @@ export class BillingPage extends NixComponent {
                                 <div class="form-grid">
                                     <div class="form-group">
                                         <label>NIT</label>
-                                        <input type="text" value=${() => this.nit.value} @input=${(e: any) => this.nit.update(() => e.target.value)} placeholder="900.XXX.XXX-X" />
+                                        <input type="text" value=${() => this.nit.value} @input=${(e: InputEvent) => this.nit.update(() => (e.target as HTMLInputElement).value)} placeholder="900.XXX.XXX-X" />
                                     </div>
                                     <div class="form-group">
                                         <label>Razón Social / Contacto</label>
-                                        <input type="text" value=${() => this.billingContactName.value} @input=${(e: any) => this.billingContactName.update(() => e.target.value)} placeholder="Nombre del contacto de facturación" />
+                                        <input type="text" value=${() => this.billingContactName.value} @input=${(e: InputEvent) => this.billingContactName.update(() => (e.target as HTMLInputElement).value)} placeholder="Nombre del contacto de facturación" />
                                     </div>
                                     <div class="form-group">
                                         <label>Email de Facturación</label>
-                                        <input type="email" value=${() => this.billingContactEmail.value} @input=${(e: any) => this.billingContactEmail.update(() => e.target.value)} />
+                                        <input type="email" value=${() => this.billingContactEmail.value} @input=${(e: InputEvent) => this.billingContactEmail.update(() => (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <div class="form-group">
                                         <label>Teléfono de Facturación</label>
-                                        <input type="text" value=${() => this.billingPhone.value} @input=${(e: any) => this.billingPhone.update(() => e.target.value)} />
+                                        <input type="text" value=${() => this.billingPhone.value} @input=${(e: InputEvent) => this.billingPhone.update(() => (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <div class="form-group">
                                         <label>Dirección de Facturación</label>
-                                        <input type="text" value=${() => this.billingAddress.value} @input=${(e: any) => this.billingAddress.update(() => e.target.value)} />
+                                        <input type="text" value=${() => this.billingAddress.value} @input=${(e: InputEvent) => this.billingAddress.update(() => (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <div class="form-group">
                                         <label>Régimen Tributario</label>
-                                        <input type="text" value=${() => this.taxRegime.value} @input=${(e: any) => this.taxRegime.update(() => e.target.value)} placeholder="Simplificado, Común, etc." />
+                                        <input type="text" value=${() => this.taxRegime.value} @input=${(e: InputEvent) => this.taxRegime.update(() => (e.target as HTMLInputElement).value)} placeholder="Simplificado, Común, etc." />
                                     </div>
                                 </div>
                                 <div class="form-actions">
@@ -186,15 +187,18 @@ export class BillingPage extends NixComponent {
                                     ${() => {
                             const list = this.paymentsQuery.data.value || [];
                             if (!list.length) return html`<tr><td colspan="5" class="empty">Sin pagos registrados.</td></tr>`;
-                            return list.map((p: any) => html`
+                            return repeat(list, (p: Payment) => p.id, (p: Payment) => {
+                                const badgeClass = `badge badge-${p.status}`;
+                                return html`
                                             <tr>
                                                 <td>${new Date(p.date).toLocaleDateString('es-CO')}</td>
-                                                <td>$${p.amount.toLocaleString()} COP</td>
+                                                <td>$${Number(p.amount).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} COP</td>
                                                 <td>${p.method}</td>
-                                                <td><span class="badge badge-${p.status}">${p.status}</span></td>
+                                                <td><span class=${badgeClass}>${p.status}</span></td>
                                                 <td>${p.invoiceUrl ? html`<a href=${p.invoiceUrl} target="_blank">Factura</a>` : '-'}</td>
                                             </tr>
-                                        `);
+                                        `;
+                            });
                         }}
                                 </tbody>
                             </table>
