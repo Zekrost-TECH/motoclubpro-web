@@ -1,52 +1,47 @@
-import { html, signal, effect } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { html, signal, NixComponent } from '@deijose/nix-js';
+import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
-import { showToast } from '../../components/Toast';
 import { SkeletonTable } from '../../components/Skeleton';
+import { formatEnum } from '../../utils/labels';
 
-const typeFilter = signal('');
+export class SupportPointsPage extends NixComponent {
+    typeFilter = signal('');
 
-export function SupportPointsPage(): NixTemplate {
-    document.title = 'Puntos de Apoyo | MotoClub Pro';
-    const allPoints = signal<any[]>([]);
-    const loading = signal(true);
-    const verifyingId = signal<string | null>(null);
+    pointsQuery = createQuery('support-points/list', () => api.supportPoints.list(), { staleTime: 60_000 });
 
-    function refresh() {
-        loading.update(() => true);
-        api.supportPoints.list().then(p => {
-            allPoints.update(() => p);
-            loading.update(() => false);
-        }).catch(() => {
-            loading.update(() => false);
-            showToast('Error al cargar puntos de apoyo', 'error');
-        });
+    verifyPointCommand = createCommand(
+        'support-points/verify',
+        async (payload: { id: string; verified: boolean }) => api.supportPoints.verify(payload.id, payload.verified),
+        {
+            mode: 'latest',
+            onSuccess: () => invalidateQueries('support-points/list'),
+        }
+    );
+
+    onMount() {
+        document.title = 'Puntos de Apoyo | MotoClub Pro';
     }
 
-    effect(() => { refresh(); });
-
-    const filtered = () => {
-        let list = allPoints.value || [];
-        if (typeFilter.value) list = list.filter((p: any) => p.type === typeFilter.value);
+    filtered() {
+        let list = this.pointsQuery.data.value || [];
+        if (this.typeFilter.value) list = list.filter((p: any) => p.type === this.typeFilter.value);
         return list;
-    };
-
-    function verifyPoint(id: string, currentStatus: boolean) {
-        verifyingId.update(() => id);
-        api.supportPoints.verify(id, !currentStatus).then(() => {
-            showToast(currentStatus ? 'Verificación removida' : 'Punto verificado', 'success');
-            refresh();
-        }).catch(() => {
-            showToast('Error al verificar', 'error');
-        }).finally(() => verifyingId.update(() => null));
     }
 
-    return html`
+    verifyPoint(id: string, currentStatus: boolean) {
+        this.verifyPointCommand.execute({ id, verified: !currentStatus });
+    }
+
+    render() {
+        return html`
         <div class="page-header">
-            <h2>Puntos de Apoyo</h2>
+            <div class="page-header-left">
+                <h1 class="page-title">Puntos de Apoyo</h1>
+                <p class="page-subtitle">Talleres, gasolineras, grúas y descansos verificados</p>
+            </div>
         </div>
         <div class="toolbar">
-            <select class="input" @change=${(e: any) => typeFilter.update(() => e.target.value)}>
+            <select class="input" @change=${(e: any) => this.typeFilter.update(() => e.target.value)}>
                 <option value="">Todos los tipos</option>
                 <option value="taller">Taller</option>
                 <option value="llanteria">Llantería</option>
@@ -55,32 +50,43 @@ export function SupportPointsPage(): NixTemplate {
                 <option value="descanso">Descanso</option>
                 <option value="hospital">Hospital</option>
             </select>
+            <div class="toolbar-spacer"></div>
+            <span class="text-secondary">${() => this.filtered().length} puntos</span>
         </div>
         <div class="data-table-wrapper">
-            ${() => loading.value
-            ? SkeletonTable(5)
-            : html`
+            ${() => this.pointsQuery.status.value === 'pending'
+                ? SkeletonTable(5)
+                : this.pointsQuery.status.value === 'error'
+                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar puntos de apoyo</div>`
+                    : html`
                     <table class="data-table">
                         <thead><tr><th>Nombre</th><th>Tipo</th><th>Ciudad</th><th>Verificado</th><th>Rating</th><th></th></tr></thead>
                         <tbody>
-                            ${filtered().map((p: any) => html`
+                            ${this.filtered().map((p: any) => html`
                                 <tr>
                                     <td><strong>${p.name}</strong></td>
-                                    <td>${p.type}</td>
+                                    <td>${formatEnum(p.type)}</td>
                                     <td>${p.city}</td>
                                     <td><span class="badge badge-${p.verified ? 'success' : 'warning'}">${p.verified ? 'Verificado' : 'Pendiente'}</span></td>
-                                    <td>⭐ ${p.rating || 0} (${p.reviewCount || 0})</td>
+                                    <td><ion-icon name="star" style="color:var(--mc-warning-500);"></ion-icon> ${p.rating || 0} (${p.reviewCount || 0})</td>
                                     <td>
-                                        <button class="btn btn-sm" @click=${() => verifyPoint(p.id, p.verified)} ?disabled=${() => verifyingId.value === p.id}>
-                                            ${() => verifyingId.value === p.id ? '...' : (p.verified ? 'Rechazar' : 'Verificar')}
+                                        <button class="btn btn-sm ${p.verified ? 'btn-danger' : 'btn-primary'}" @click=${() => this.verifyPoint(p.id, p.verified)} disabled=${() => this.verifyPointCommand.isPending.value}>
+                                            ${() => this.verifyPointCommand.isPending.value ? '...' : (p.verified ? 'Rechazar' : 'Verificar')}
                                         </button>
                                     </td>
                                 </tr>
                             `)}
                         </tbody>
                     </table>
-                    ${!filtered().length ? html`<p class="empty">No se encontraron puntos de apoyo.</p>` : ''}
+                    ${!this.filtered().length ? html`
+                        <div class="empty">
+                            <ion-icon name="location-outline" class="empty-icon"></ion-icon>
+                            <h4>No se encontraron puntos de apoyo</h4>
+                            <p>Prueba ajustando el filtro.</p>
+                        </div>
+                    ` : ''}
                 `}
         </div>
     `;
+    }
 }

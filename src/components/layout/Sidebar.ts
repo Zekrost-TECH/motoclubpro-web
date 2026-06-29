@@ -1,24 +1,38 @@
 import { html } from '@deijose/nix-js';
 import type { NixTemplate } from '@deijose/nix-js';
-import { router, currentPath } from '../../router';
+import { router } from '../../router';
+import { currentUser, logout } from '../../stores/auth.store';
 import { activeClub } from '../../stores/clubs.store';
+import { mobileMenuOpen, closeMobileMenu } from '../../stores/ui.store';
+import { routerPath } from '../../stores/router.store';
 
-interface NavItem { label: string; icon: string; path: string; admin?: boolean; }
+interface NavItem { label: string; path: string; icon: string; admin?: boolean; }
 
 const navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'speedometer', path: '/' },
-    { label: 'Rodadas', icon: 'calendar', path: '/events' },
-    { label: 'Rutas', icon: 'map', path: '/routes' },
-    { label: 'Miembros', icon: 'people', path: '/members' },
-    { label: 'Puntos de Apoyo', icon: 'build', path: '/support' },
-    { label: 'Suscripción', icon: 'card', path: '/billing', admin: true },
-    { label: 'Reportes', icon: 'bar-chart', path: '/reports', admin: true },
-    { label: 'Configuración', icon: 'settings', path: '/settings', admin: true },
+    { label: 'Dashboard', path: '/dashboard', icon: 'speedometer-outline' },
+    { label: 'Rodadas', path: '/events', icon: 'flag-outline' },
+    { label: 'Rutas', path: '/routes', icon: 'map-outline' },
+    { label: 'Miembros', path: '/members', icon: 'people-outline' },
+    { label: 'Puntos de Apoyo', path: '/support', icon: 'location-outline' },
+    { label: 'Suscripción', path: '/billing', icon: 'card-outline', admin: true },
+    { label: 'Reportes', path: '/reports', icon: 'bar-chart-outline', admin: true },
+    { label: 'Configuración', path: '/settings', icon: 'settings-outline', admin: true },
 ];
 
+function getInitials(name?: string): string {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+}
+
+function isActiveRoute(path: string, current: string): boolean {
+    return current === path || current.startsWith(path + '/');
+}
+
 export function Sidebar(): NixTemplate {
+    const user = currentUser.value;
+
     return html`
-        <aside class="sidebar">
+        <aside class=${() => `sidebar ${mobileMenuOpen.value ? 'open' : ''}`}>
             <div class="sidebar-header">
                 <img src="/nix-js-logo.png" alt="MotoClub Pro" class="sidebar-logo" />
                 <h2>MotoClub Pro</h2>
@@ -27,16 +41,24 @@ export function Sidebar(): NixTemplate {
             : ''}
             </div>
             <nav class="sidebar-nav">
-                ${navItems.map(item => html`
-                    <a class=${() => `nav-item ${currentPath.value === item.path ? 'active' : ''}`}
-                       @click=${() => router.navigate(item.path)}>
-                        <ion-icon name="${item.icon}-outline"></ion-icon>
+                ${() => navItems.map(item => html`
+                    <a class=${() => `sidebar-nav-item ${isActiveRoute(item.path, routerPath.value) ? 'active' : ''}`}
+                       href=${item.path}
+                       @click.prevent=${() => { router.navigate(item.path); closeMobileMenu(); }}>
+                        <ion-icon name=${item.icon}></ion-icon>
                         <span>${item.label}</span>
                     </a>
                 `)}
             </nav>
             <div class="sidebar-footer">
-                <span>v0.1.0</span>
+                <div class="avatar avatar-sm">${getInitials(user?.name || user?.email)}</div>
+                <div class="sidebar-user">
+                    <span class="sidebar-user-name">${user?.name || user?.email || 'Usuario'}</span>
+                    <span class="sidebar-user-role">${user?.role || 'piloto'}</span>
+                </div>
+                <button class="sidebar-logout" @click=${() => { logout(); router.navigate('/login'); }} title="Cerrar sesión">
+                    <ion-icon name="log-out-outline"></ion-icon>
+                </button>
             </div>
         </aside>
     `;

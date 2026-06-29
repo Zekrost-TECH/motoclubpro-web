@@ -1,87 +1,123 @@
-import { html, signal, effect } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
-import { api } from '../../services/api.service';
 import { router } from '../../router';
-import { showToast } from '../../components/Toast';
+import { html, NixComponent } from '@deijose/nix-js';
+import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { api } from '../../services/api.service';
 import { openConfirm } from '../../components/ConfirmModal';
 import { SkeletonCard } from '../../components/Skeleton';
+import { formatEnum } from '../../utils/labels';
+import { createDebounced } from '../../utils/debounce';
+import { activeClub } from '../../stores/clubs.store';
 
-const searchQuery = signal('');
+export class RoutesListPage extends NixComponent {
+    search = createDebounced('', 300);
+    private router = router;
 
-export function RoutesListPage(): NixTemplate {
-    document.title = 'Rutas | MotoClub Pro';
+    routesQuery = createQuery(
+        'routes/list',
+        () => api.routes.list(),
+        {
+            params: () => ({ clubId: activeClub.value?.id || '' }),
+            staleTime: 60_000,
+        }
+    );
 
-    const allRoutes = signal<any[]>([]);
-    const loading = signal(true);
+    deleteRoute = createCommand(
+        'routes/delete',
+        async (id: string) => api.routes.delete(id),
+        {
+            mode: 'latest',
+            onSuccess: () => invalidateQueries('routes/list'),
+        }
+    );
 
-    function refresh() {
-        loading.update(() => true);
-        api.routes.list().then(r => {
-            allRoutes.update(() => r);
-            loading.update(() => false);
-        }).catch(() => {
-            loading.update(() => false);
-            showToast('Error al cargar rutas', 'error');
-        });
+    onMount() {
+        document.title = 'Rutas | MotoClub Pro';
     }
 
-    effect(() => { refresh(); });
-
-    const filtered = () => {
-        let list = allRoutes.value || [];
-        if (searchQuery.value) {
-            const q = searchQuery.value.toLowerCase();
+    filtered() {
+        let list = this.routesQuery.data.value || [];
+        if (this.search.commit.value) {
+            const q = this.search.commit.value.toLowerCase();
             list = list.filter((r: any) => r.name.toLowerCase().includes(q));
         }
         return list;
-    };
+    }
 
-    function confirmDelete(id: string) {
+    confirmDelete(id: string) {
         openConfirm('Eliminar Ruta', '¿Estás seguro de eliminar esta ruta?', () => {
-            api.routes.delete(id).then(() => {
-                showToast('Ruta eliminada', 'success');
-                refresh();
-            }).catch(() => showToast('Error al eliminar', 'error'));
+            this.deleteRoute.execute(id);
         });
     }
 
-    return html`
+    difficultyBadge(difficulty: string): string {
+        switch (difficulty) {
+            case 'suave': return 'badge-success';
+            case 'moderado': return 'badge-warning';
+            case 'expertos': return 'badge-danger';
+            case 'viaje_largo': return 'badge-info';
+            default: return 'badge';
+        }
+    }
+
+    render() {
+        return html`
         <div class="page-header">
-            <h2>Rutas</h2>
-            <button class="btn btn-primary" @click=${() => router.navigate('/routes/create')}>
-                <ion-icon name="add-outline"></ion-icon> Nueva Ruta
-            </button>
+            <div class="page-header-left">
+                <h1 class="page-title">Rutas</h1>
+                <p class="page-subtitle">Colección de caminos y recorridos del club</p>
+            </div>
+            <div class="page-header-actions">
+                <button class="btn btn-primary" @click=${() => this.router.navigate('/routes/create')}>
+                    <ion-icon name="add-outline"></ion-icon>
+                    Nueva Ruta
+                </button>
+            </div>
         </div>
         <div class="toolbar">
             <input type="text" class="input search-input" placeholder="Buscar ruta..."
-                   .value=${() => searchQuery.value} @input=${(e: any) => searchQuery.update(() => e.target.value)} />
+                   value=${() => this.search.value.value} @input=${(e: any) => this.search.setValue(e.target.value)} />
+            <div class="toolbar-spacer"></div>
+            <span class="text-secondary">${() => this.filtered().length} rutas</span>
         </div>
-        ${() => loading.value
-            ? html`<div class="cards-grid">${SkeletonCard()}${SkeletonCard()}${SkeletonCard()}</div>`
-            : html`
+        ${() => this.routesQuery.status.value === 'pending'
+                ? html`<div class="cards-grid">${SkeletonCard()}${SkeletonCard()}${SkeletonCard()}</div>`
+                : this.routesQuery.status.value === 'error'
+                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar rutas</div>`
+                    : html`
                 <div class="cards-grid">
-                    ${filtered().map((r: any) => html`
-                        <div class="card" @click=${() => router.navigate(`/routes/${r.id}`)}>
+                    ${this.filtered().map((r: any) => html`
+                        <div class="card" @click=${() => this.router.navigate(`/routes/${r.id}`)}>
                             <div class="card-header">
                                 <h3>${r.name}</h3>
-                                <span class="badge">${r.difficulty}</span>
+                                <span class="badge ${this.difficultyBadge(r.difficulty)}">${formatEnum(r.difficulty)}</span>
                             </div>
                             <div class="card-body">
-                                <p>${r.description}</p>
+                                <p>${r.description || 'Sin descripción'}</p>
                                 <div class="card-meta">
-                                    <span><ion-icon name="map-outline"></ion-icon> ${r.distance} km</span>
-                                    <span><ion-icon name="time-outline"></ion-icon> ${r.estimatedTime}</span>
+                                    <span><ion-icon name="map-outline"></ion-icon> ${r.distance || r.distanceKm || 0} km</span>
+                                    <span><ion-icon name="time-outline"></ion-icon> ${r.estimatedTime || '-'}</span>
                                     <span><ion-icon name="location-outline"></ion-icon> ${r.waypoints?.length || 0} waypoints</span>
                                 </div>
                             </div>
                             <div class="card-footer">
-                                <button class="btn btn-sm" @click.stop=${() => router.navigate(`/routes/${r.id}/edit`)}>Editar</button>
-                                <button class="btn btn-sm btn-danger" @click.stop=${() => confirmDelete(r.id)}>Eliminar</button>
+                                <button class="btn btn-sm btn-secondary" @click.stop=${() => this.router.navigate(`/routes/${r.id}/edit`)}>
+                                    <ion-icon name="create-outline"></ion-icon> Editar
+                                </button>
+                                <button class="btn btn-sm btn-danger" @click.stop=${() => this.confirmDelete(r.id)}>
+                                    <ion-icon name="trash-outline"></ion-icon> Eliminar
+                                </button>
                             </div>
                         </div>
                     `)}
                 </div>
-                ${!filtered().length ? html`<p class="empty">No se encontraron rutas.</p>` : ''}
+                ${!this.filtered().length ? html`
+                    <div class="empty">
+                        <ion-icon name="map-outline" class="empty-icon"></ion-icon>
+                        <h4>No se encontraron rutas</h4>
+                        <p>Crea la primera ruta del club.</p>
+                    </div>
+                ` : ''}
             `}
     `;
+    }
 }

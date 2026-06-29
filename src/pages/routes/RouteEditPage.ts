@@ -1,96 +1,152 @@
-import { html, signal, effect } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
-import { api } from '../../services/api.service';
 import { router } from '../../router';
+import { html, signal, NixComponent, createForm, required, watch } from '@deijose/nix-js';
+import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
+import type { Route } from '../../types';
 
-export function RouteEditPage(routeId: string): NixTemplate {
-    document.title = 'Editar Ruta | MotoClub Pro';
-    const name = signal('');
-    const description = signal('');
-    const difficulty = signal('suave');
-    const distance = signal(0);
-    const estimatedTime = signal('');
-    const waypoints = signal<any[]>([]);
-    const submitting = signal(false);
+export class RouteEditPage extends NixComponent {
+    private router = router;
+    private routeId = this.router.params.value?.id || '';
+    private _unwatch!: () => void;
 
-    effect(() => {
-        api.routes.get(routeId).then(r => {
-            name.update(() => r.name);
-            description.update(() => r.description || '');
-            difficulty.update(() => r.difficulty);
-            distance.update(() => r.distance);
-            estimatedTime.update(() => r.estimatedTime);
-            waypoints.update(() => (r.waypoints || []).map((wp: any, idx: number) => ({
-                id: wp.id,
-                name: wp.name || '',
-                type: wp.type || 'parada',
-                lat: wp.lat ?? wp.location?.coordinates?.[1] ?? 0,
-                lng: wp.lng ?? wp.location?.coordinates?.[0] ?? 0,
-                sortOrder: wp.sortOrder ?? idx,
-            })));
-        }).catch(() => { });
-    });
-
-    async function handleSubmit() {
-
-        submitting.update(() => true);
-        try {
-            await api.routes.update(routeId, {
-                name: name.value,
-                description: description.value,
-                difficulty: difficulty.value as any,
-                distance: Number(distance.value),
-                estimatedTime: estimatedTime.value,
-            });
+    routeQuery = createQuery(
+        'routes/detail',
+        async ({ id }: { id: string }) => {
+            if (!id) throw new Error('No hay ruta seleccionada');
+            return api.routes.get(id);
+        },
+        {
+            params: () => ({ id: this.router.params.value?.id || '' }),
+            staleTime: 30_000,
+        }
+    );
+    updateRoute = createCommand(
+        'routes/update',
+        async (payload: { id: string; data: Partial<Route>; waypoints: any[] }) => {
+            await api.routes.update(payload.id, payload.data);
             const geojson = {
                 type: 'FeatureCollection',
-                features: waypoints.value.map((wp, idx) => ({
+                features: payload.waypoints.map((wp, idx) => ({
                     type: 'Feature',
                     geometry: { type: 'Point', coordinates: [wp.lng, wp.lat] },
                     properties: { name: wp.name, type: wp.type, sortOrder: idx },
                 })),
             };
-            await api.routes.addBatchWaypoints(routeId, geojson);
+            await api.routes.addBatchWaypoints(payload.id, geojson);
+        },
+        {
+            mode: 'latest',
+            onSuccess: () => {
+                invalidateQueries('routes/detail');
+                invalidateQueries('routes/list');
+            },
+        }
+    );
+
+    form = createForm(
+        { name: '', description: '', difficulty: 'suave' as Route['difficulty'], distance: 0, estimatedTime: '' },
+        {
+            validators: {
+                name: [required()],
+            },
+            validateOn: 'blur',
+        }
+    );
+
+    waypoints = signal<any[]>([]);
+
+    onInit() {
+        this._unwatch = watch(
+            () => this.routeQuery.data.value,
+            (data) => {
+                if (data) {
+                    const route = data as Route;
+                    this.form.reset({
+                        name: route.name,
+                        description: route.description || '',
+                        difficulty: route.difficulty,
+                        distance: route.distance,
+                        estimatedTime: route.estimatedTime,
+                    });
+                    this.waypoints.update(() => (route.waypoints || []).map((wp: any, idx: number) => ({
+                        id: wp.id,
+                        name: wp.name || '',
+                        type: wp.type || 'parada',
+                        lat: wp.lat ?? wp.location?.coordinates?.[1] ?? 0,
+                        lng: wp.lng ?? wp.location?.coordinates?.[0] ?? 0,
+                        sortOrder: wp.sortOrder ?? idx,
+                    })));
+                }
+            },
+            { immediate: true }
+        );
+    }
+
+    onMount() {
+        document.title = 'Editar Ruta | MotoClub Pro';
+    }
+
+    onUnmount() {
+        this._unwatch?.();
+        this.form.dispose();
+    }
+
+    async handleSubmit(values: { name: string; description: string; difficulty: Route['difficulty']; distance: number; estimatedTime: string }) {
+        try {
+            await this.updateRoute.executeAsync({
+                id: this.routeId,
+                data: values,
+                waypoints: this.waypoints.value,
+            });
             showToast('Ruta actualizada', 'success');
-            router.navigate('/routes');
+            this.router.back();
         } catch (err: any) {
             showToast(err.message || 'Error al guardar', 'error');
-        } finally {
-            submitting.update(() => false);
         }
     }
 
-    function addWaypoint() {
-        const list = waypoints.value;
-        waypoints.update(() => [...list, { name: '', type: 'parada', lat: 0, lng: 0 }]);
+    addWaypoint() {
+        const list = this.waypoints.value;
+        this.waypoints.update(() => [...list, { name: '', type: 'parada', lat: 0, lng: 0 }]);
     }
 
-    function updateWaypoint(index: number, field: string, value: any) {
-        const list = [...waypoints.value];
+    updateWaypoint(index: number, field: string, value: any) {
+        const list = [...this.waypoints.value];
         list[index] = { ...list[index], [field]: value };
-        waypoints.update(() => list);
+        this.waypoints.update(() => list);
     }
 
-    function removeWaypoint(index: number) {
-        const list = [...waypoints.value];
+    removeWaypoint(index: number) {
+        const list = [...this.waypoints.value];
         list.splice(index, 1);
-        waypoints.update(() => list);
+        this.waypoints.update(() => list);
     }
 
-    return html`
+    render() {
+        return html`
         <div class="page-header">
-            <h2>Editar Ruta</h2>
+            <div class="page-header-left">
+                <h1 class="page-title">Editar Ruta</h1>
+                <p class="page-subtitle">Actualiza la ruta y sus waypoints</p>
+            </div>
         </div>
-        <form class="form-card" @submit.prevent=${handleSubmit}>
+        ${() => this.routeQuery.status.value === 'pending' && !this.routeQuery.data.value
+                ? html`<div class="form-card"><p>Cargando ruta...</p></div>`
+                : this.routeQuery.status.value === 'error'
+                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar ruta</div>`
+                    : html`
+        <form class="form-card" @submit.prevent=${this.form.handleSubmit((values) => this.handleSubmit(values))}>
+            <h3 class="form-section-title">Información general</h3>
             <div class="form-grid">
                 <div class="form-group">
                     <label>Nombre</label>
-                    <input type="text" .value=${() => name.value} @input=${(e: any) => name.update(() => e.target.value)} required />
+                    <input type="text" value=${() => this.form.fields.name.value.value} @input=${this.form.fields.name.onInput} @blur=${this.form.fields.name.onBlur} required />
+                    ${() => this.form.fields.name.error.value ? html`<span class="err">${this.form.fields.name.error.value}</span>` : null}
                 </div>
                 <div class="form-group">
                     <label>Dificultad</label>
-                    <select .value=${() => difficulty.value} @change=${(e: any) => difficulty.update(() => e.target.value)}>
+                    <select value=${() => this.form.fields.difficulty.value.value} @change=${this.form.fields.difficulty.onInput}>
                         <option value="suave">Suave</option>
                         <option value="off_road">Off Road</option>
                         <option value="viaje_largo">Viaje Largo</option>
@@ -99,33 +155,35 @@ export function RouteEditPage(routeId: string): NixTemplate {
                 </div>
                 <div class="form-group">
                     <label>Distancia (km)</label>
-                    <input type="number" .value=${() => distance.value} @input=${(e: any) => distance.update(() => Number(e.target.value))} required />
+                    <input type="number" value=${() => this.form.fields.distance.value.value} @input=${this.form.fields.distance.onInput} @blur=${this.form.fields.distance.onBlur} required />
+                    ${() => this.form.fields.distance.error.value ? html`<span class="err">${this.form.fields.distance.error.value}</span>` : null}
                 </div>
                 <div class="form-group">
                     <label>Tiempo Estimado</label>
-                    <input type="text" .value=${() => estimatedTime.value} @input=${(e: any) => estimatedTime.update(() => e.target.value)} />
+                    <input type="text" value=${() => this.form.fields.estimatedTime.value.value} @input=${this.form.fields.estimatedTime.onInput} />
                 </div>
             </div>
             <div class="form-group">
                 <label>Descripción</label>
-                <textarea rows="3" .value=${() => description.value} @input=${(e: any) => description.update(() => e.target.value)}></textarea>
+                <textarea rows="3" value=${() => this.form.fields.description.value.value} @input=${this.form.fields.description.onInput}></textarea>
             </div>
+            <h3 class="form-section-title" style="margin-top:var(--mc-space-6);">Waypoints</h3>
             <div class="form-group">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <label>Waypoints</label>
-                    <button type="button" class="btn btn-sm" @click=${addWaypoint}>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--mc-space-3);">
+                    <label>Puntos del recorrido</label>
+                    <button type="button" class="btn btn-sm btn-secondary" @click=${() => this.addWaypoint()}>
                         <ion-icon name="add-outline"></ion-icon> Agregar Waypoint
                     </button>
                 </div>
-                ${() => waypoints.value.map((wp: any, idx: number) => html`
-                    <div class="form-grid" style="margin-top:0.75rem;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius);">
+                ${() => this.waypoints.value.map((wp: any, idx: number) => html`
+                    <div class="form-grid" style="margin-top:0.75rem;padding:var(--mc-space-4);border:1px solid var(--mc-border);border-radius:var(--mc-radius-md);background:var(--mc-bg-panel);">
                         <div class="form-group" style="margin-bottom:0.5rem;">
                             <label>Nombre</label>
-                            <input type="text" .value=${wp.name} @input=${(e: any) => updateWaypoint(idx, 'name', e.target.value)} />
+                            <input type="text" value=${wp.name} @input=${(e: any) => this.updateWaypoint(idx, 'name', e.target.value)} />
                         </div>
                         <div class="form-group" style="margin-bottom:0.5rem;">
                             <label>Tipo</label>
-                            <select .value=${wp.type} @change=${(e: any) => updateWaypoint(idx, 'type', e.target.value)}>
+                            <select value=${wp.type} @change=${(e: any) => this.updateWaypoint(idx, 'type', e.target.value)}>
                                 <option value="inicio">Inicio</option>
                                 <option value="parada">Parada</option>
                                 <option value="gasolinera">Gasolinera</option>
@@ -135,27 +193,30 @@ export function RouteEditPage(routeId: string): NixTemplate {
                         </div>
                         <div class="form-group" style="margin-bottom:0.5rem;">
                             <label>Lat</label>
-                            <input type="number" step="any" .value=${wp.lat} @input=${(e: any) => updateWaypoint(idx, 'lat', Number(e.target.value))} />
+                            <input type="number" step="any" value=${wp.lat} @input=${(e: any) => this.updateWaypoint(idx, 'lat', Number(e.target.value))} />
                         </div>
                         <div class="form-group" style="margin-bottom:0.5rem;">
                             <label>Lng</label>
-                            <input type="number" step="any" .value=${wp.lng} @input=${(e: any) => updateWaypoint(idx, 'lng', Number(e.target.value))} />
+                            <input type="number" step="any" value=${wp.lng} @input=${(e: any) => this.updateWaypoint(idx, 'lng', Number(e.target.value))} />
                         </div>
                         <div class="form-group" style="margin-bottom:0;grid-column:1 / -1;text-align:right;">
-                            <button type="button" class="btn btn-sm btn-danger" @click=${() => removeWaypoint(idx)}>
+                            <button type="button" class="btn btn-sm btn-danger" @click=${() => this.removeWaypoint(idx)}>
                                 <ion-icon name="trash-outline"></ion-icon> Eliminar
                             </button>
                         </div>
                     </div>
                 `)}
-                ${() => !waypoints.value.length ? html`<p class="empty">No hay waypoints. Agrega uno.</p>` : ''}
+                ${() => !this.waypoints.value.length ? html`<div class="empty"><ion-icon name="location-outline" class="empty-icon"></ion-icon><h4>No hay waypoints</h4><p>Agrega uno para definir el recorrido.</p></div>` : ''}
             </div>
             <div class="form-actions">
-                <button type="button" class="btn" @click=${() => router.navigate('/routes')}>Cancelar</button>
-                <button type="submit" class="btn btn-primary" ?disabled=${() => submitting.value}>
-                    ${() => submitting.value ? 'Guardando...' : 'Guardar Cambios'}
+                <button type="button" class="btn btn-secondary" @click=${() => this.router.back()}>Cancelar</button>
+                <button type="submit" class="btn btn-primary" disabled=${() => this.updateRoute.isPending.value}>
+                    <ion-icon name="save-outline"></ion-icon>
+                    ${() => this.updateRoute.isPending.value ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
             </div>
         </form>
+    `}
     `;
+    }
 }

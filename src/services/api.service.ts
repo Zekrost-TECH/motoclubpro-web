@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import type { Club, User, Event, EventAttendee, Route, Waypoint, SupportPoint, Subscription, Payment } from '../types';
+import type { Club, User, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment } from '../types';
 import { router } from '../router';
 
 const BASE_URL = (import.meta as any).env.VITE_WEB_API_URL || 'http://localhost:3000/api/v1';
@@ -21,9 +21,11 @@ function handleAuthError(status: number): void {
 function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const url = `${BASE_URL}${path}`;
     const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
         ...(options.headers as Record<string, string> || {}),
     };
+    if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+    }
     if (_accessToken) {
         headers['Authorization'] = `Bearer ${_accessToken}`;
     }
@@ -37,7 +39,12 @@ function request<T>(path: string, options: RequestInit = {}): Promise<T> {
             throw new Error(err.message || `HTTP ${r.status}`);
         }
         if (r.status === 204) return undefined as T;
-        return r.json() as Promise<T>;
+        const body = await r.json();
+        // Backend devuelve paginación { data, meta }. Si la respuesta tiene esa forma, devolvemos data.
+        if (body && typeof body === 'object' && 'data' in body && 'meta' in body && body.meta && typeof body.meta === 'object' && 'totalPages' in body.meta) {
+            return body.data as T;
+        }
+        return body as T;
     });
 }
 
@@ -62,6 +69,81 @@ export function setActiveClub(id: string): void {
 
 export function getActiveClub(): string | null {
     return _activeClubId;
+}
+
+// ── Event mappers (snake_case ↔ camelCase) ───────────────────────────────
+
+function mapEventStatus(status: string): Event['status'] {
+    return status as Event['status'];
+}
+
+function eventStatusToBackend(status: Event['status']): string {
+    return status;
+}
+
+function mapEvent(data: any): Event {
+    const event = {
+        ...data,
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        date: data.date,
+        time: data.time,
+        meetingPoint: data.meeting_point ?? data.meetingPoint ?? '',
+        difficulty: data.difficulty,
+        status: mapEventStatus(data.status),
+        routeId: data.route_id ?? data.routeId,
+        createdAt: data.created_at ?? data.createdAt,
+    } as Event;
+    if (data.attendees) {
+        (event as any).attendees = data.attendees.map(mapAttendee);
+    }
+    if (data.inventory) {
+        (event as any).inventory = data.inventory.map(mapInventoryItem);
+    }
+    return event;
+}
+
+function mapEventInput(data: Partial<Event>): any {
+    const payload: any = { ...data };
+    if (data.meetingPoint !== undefined) {
+        payload.meeting_point = data.meetingPoint;
+        delete payload.meetingPoint;
+    }
+    if (data.routeId !== undefined) {
+        payload.route_id = data.routeId;
+        delete payload.routeId;
+    }
+    return payload;
+}
+
+function mapAttendee(data: any): EventAttendee {
+    return {
+        userId: data.user_id ?? data.userId,
+        userName: data.name ?? data.userName ?? data.nickname ?? '',
+        rideRole: data.ride_role ?? data.rideRole ?? 'rider',
+        confirmed: data.confirmed_at ? true : (data.confirmed ?? false),
+    };
+}
+
+function mapChecklistItem(data: any): ChecklistItem {
+    return {
+        id: data.id,
+        label: data.label ?? data.name ?? data.description ?? `Item ${data.id}`,
+        required: data.required ?? false,
+    };
+}
+
+function mapInventoryItem(data: any): InventoryItem {
+    return {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        quantity: data.quantity ?? data.totalQuantity,
+        totalQuantity: data.total_quantity ?? data.totalQuantity ?? data.quantity ?? 1,
+        claimedBy: data.assigned_to ?? data.claimedBy,
+    };
 }
 
 export const api = {
@@ -113,19 +195,28 @@ export const api = {
             request<void>(`/clubs/${id}/billing`, { method: 'PATCH', body: JSON.stringify(data) }),
     },
     events: {
-        list: (status?: string) => request<Event[]>(`/events${status ? `?status=${status}` : ''}`),
-        get: (id: string) => request<Event>(`/events/${id}`),
-        create: (data: Partial<Event>) => request<Event>('/events', { method: 'POST', body: JSON.stringify(data) }),
+        list: (status?: string) =>
+            request<Event[]>(`/events${status ? `?status=${status}` : ''}`).then((list) => (list || []).map(mapEvent)),
+        get: (id: string) => request<Event>(`/events/${id}`).then(mapEvent),
+        create: (data: Partial<Event>) =>
+            request<Event>('/events', { method: 'POST', body: JSON.stringify(mapEventInput(data)) }).then(mapEvent),
         update: (id: string, data: Partial<Event>) =>
-            request<Event>(`/events/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+            request<Event>(`/events/${id}`, { method: 'PATCH', body: JSON.stringify(mapEventInput(data)) }).then(mapEvent),
+        updateStatus: (id: string, status: Event['status']) =>
+            request<Event>(`/events/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: eventStatusToBackend(status) }) }).then(mapEvent),
         delete: (id: string) => request<void>(`/events/${id}`, { method: 'DELETE' }),
-        attendees: (id: string) => request<EventAttendee[]>(`/events/${id}/attendees`),
+        attendees: (id: string) =>
+            request<EventAttendee[]>(`/events/${id}/attendees`).then((list) => (list || []).map(mapAttendee)),
         setRole: (id: string, userId: string, role: string) =>
-            request<void>(`/events/${id}/attendees/${userId}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }),
-        checklist: (id: string) => request<any[]>(`/events/${id}/checklist`),
-        addChecklistItem: (id: string, item: any) =>
-            request<void>(`/events/${id}/checklist`, { method: 'POST', body: JSON.stringify(item) }),
-        inventory: (id: string) => request<any[]>(`/events/${id}/inventory`),
+            request<void>(`/events/${id}/attendees/${userId}`, { method: 'PATCH', body: JSON.stringify({ ride_role: role }) }),
+        checklist: (id: string) =>
+            request<ChecklistItem[]>(`/events/${id}/checklist`).then((list) => (list || []).map(mapChecklistItem)),
+        addChecklistItem: (id: string, item: { label: string; required?: boolean }) =>
+            request<ChecklistItem>(`/events/${id}/checklist`, { method: 'POST', body: JSON.stringify(item) }).then(mapChecklistItem),
+        removeChecklistItem: (eventId: string, itemId: string) =>
+            request<void>(`/events/${eventId}/checklist/${itemId}`, { method: 'DELETE' }),
+        inventory: (id: string) =>
+            request<InventoryItem[]>(`/events/${id}/inventory`).then((list) => (list || []).map(mapInventoryItem)),
         addInventoryItem: (id: string, item: any) =>
             request<void>(`/events/${id}/inventory`, { method: 'POST', body: JSON.stringify(item) }),
         removeInventoryItem: (eventId: string, itemId: string) =>
@@ -158,14 +249,14 @@ export const api = {
     supportPoints: {
         list: (params?: { type?: string; verified?: boolean }) => {
             const qs = params ? '?' + new URLSearchParams(params as any).toString() : '';
-            return request<SupportPoint[]>(`/support-points${qs}`);
+            return request<SupportPoint[]>(`/support${qs}`);
         },
         verify: (id: string, status: boolean) =>
-            request<void>(`/support-points/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ verified: status }) }),
-        reviews: (id: string) => request<any[]>(`/support-points/${id}/reviews`),
+            request<void>(`/support/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ verified: status }) }),
+        reviews: (id: string) => request<any[]>(`/support/${id}/reviews`),
     },
     sos: {
-        active: () => request<{ data: any[]; meta: any }>('/sos/active'),
+        active: () => request<any[]>('/sos/active'),
         resolve: (id: string) => request<any>(`/sos/${id}/resolve`, { method: 'PATCH' }),
     },
     billing: {

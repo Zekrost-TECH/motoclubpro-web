@@ -1,17 +1,21 @@
-import { html } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
-import { myClubs } from '../../stores/clubs.store';
-import { switchClub } from '../../stores/clubs.store';
 import { router } from '../../router';
+import { html, NixComponent } from '@deijose/nix-js';
+import { myClubs, switchClub } from '../../stores/clubs.store';
 
-export function ClubSelectorPage(): NixTemplate {
-    document.title = 'Seleccionar Club | MotoClub Pro';
-    async function selectClub(clubId: string) {
-        await switchClub(clubId);
-        router.navigate('/');
+export class ClubSelectorPage extends NixComponent {
+    private router = router;
+
+    onMount() {
+        document.title = 'Seleccionar Club | MotoClub Pro';
     }
 
-    return html`
+    async selectClub(clubId: string) {
+        await switchClub(clubId);
+        this.router.navigate('/dashboard');
+    }
+
+    render() {
+        return html`
         <div class="auth-page">
             <div class="auth-card">
                 <div class="auth-header">
@@ -20,8 +24,8 @@ export function ClubSelectorPage(): NixTemplate {
                     <p>Elige el club que quieres administrar</p>
                 </div>
                 <div class="club-list">
-                    ${() => myClubs.value.map(club => html`
-                        <button class="club-card" @click=${() => selectClub(club.id)}>
+                    ${() => (myClubs.value || []).map(club => html`
+                        <button class="club-card" @click=${() => this.selectClub(club.id)}>
                             <div class="club-card-icon">
                                 <ion-icon name="people-circle-outline"></ion-icon>
                             </div>
@@ -29,6 +33,7 @@ export function ClubSelectorPage(): NixTemplate {
                                 <h3>${club.name}</h3>
                                 <p>${club.city || ''} ${club.department || ''}</p>
                             </div>
+                            <span class="badge badge-${club.role || 'piloto'}">${club.role || 'piloto'}</span>
                             <ion-icon name="chevron-forward-outline"></ion-icon>
                         </button>
                     `)}
@@ -36,4 +41,5 @@ export function ClubSelectorPage(): NixTemplate {
             </div>
         </div>
     `;
+    }
 }

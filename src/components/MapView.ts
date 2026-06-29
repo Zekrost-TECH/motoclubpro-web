@@ -79,6 +79,6 @@ export class MapView extends NixComponent {
     }
 
     render() {
-        return html`<div ref=${this._mapContainer} style="width:100%;height:400px;border-radius:var(--radius);border:1px solid var(--gray-300);"></div>`;
+        return html`<div ref=${this._mapContainer} style="width:100%;height:400px;border-radius:var(--mc-radius-lg);border:1px solid var(--mc-border);overflow:hidden;"></div>`;
     }
 }

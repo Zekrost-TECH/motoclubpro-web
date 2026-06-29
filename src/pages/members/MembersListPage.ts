@@ -1,88 +1,117 @@
-import { html, signal, effect } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { router } from '../../router';
+import { html, signal, NixComponent } from '@deijose/nix-js';
+import { createQuery } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
-import { router } from '../../router';
-import { showToast } from '../../components/Toast';
 import { SkeletonTable } from '../../components/Skeleton';
+import { formatEnum } from '../../utils/labels';
+import { createDebounced } from '../../utils/debounce';
 
-const searchQuery = signal('');
-const roleFilter = signal('');
+export class MembersListPage extends NixComponent {
+    search = createDebounced('', 300);
+    roleFilter = signal('');
+    private router = router;
 
-export function MembersListPage(): NixTemplate {
-    document.title = 'Miembros | MotoClub Pro';
-
-    const allMembers = signal<any[]>([]);
-    const loading = signal(true);
-
-    effect(() => {
-        const clubId = activeClub.value?.id;
-        if (clubId) {
-            loading.update(() => true);
-            api.clubs.getMembers(clubId).then(m => {
-                allMembers.update(() => m);
-                loading.update(() => false);
-            }).catch(() => {
-                loading.update(() => false);
-                showToast('Error al cargar miembros', 'error');
-            });
+    membersQuery = createQuery(
+        'members/list',
+        async ({ clubId }: { clubId: string }) => {
+            if (!clubId) throw new Error('No hay club activo');
+            return api.clubs.getMembers(clubId);
+        },
+        {
+            params: () => ({ clubId: activeClub.value?.id || '' }),
+            staleTime: 60_000,
         }
-    });
+    );
 
-    const filtered = () => {
-        let list = allMembers.value || [];
-        if (roleFilter.value) list = list.filter((m: any) => m.role === roleFilter.value);
-        if (searchQuery.value) {
-            const q = searchQuery.value.toLowerCase();
+    onMount() {
+        document.title = 'Miembros | MotoClub Pro';
+    }
+
+    getInitials(name?: string): string {
+        if (!name) return '?';
+        return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    }
+
+    filtered() {
+        let list = this.membersQuery.data.value || [];
+        if (this.roleFilter.value) list = list.filter((m: any) => m.role === this.roleFilter.value);
+        if (this.search.commit.value) {
+            const q = this.search.commit.value.toLowerCase();
             list = list.filter((m: any) => m.name?.toLowerCase().includes(q) || m.email?.toLowerCase().includes(q));
         }
         return list;
-    };
+    }
 
-    return html`
+    render() {
+        return html`
         <div class="page-header">
-            <h2>Miembros del Club</h2>
-            <button class="btn btn-primary" @click=${() => router.navigate('/members/invite')}>
-                <ion-icon name="person-add-outline"></ion-icon> Invitar Miembro
-            </button>
+            <div class="page-header-left">
+                <h1 class="page-title">Miembros</h1>
+                <p class="page-subtitle">Gestiona los pilotos de ${() => activeClub.value?.name || 'tu club'}</p>
+            </div>
+            <div class="page-header-actions">
+                <button class="btn btn-primary" @click=${() => this.router.navigate('/members/invite')}>
+                    <ion-icon name="person-add-outline"></ion-icon>
+                    Invitar Miembro
+                </button>
+            </div>
         </div>
         <div class="toolbar">
             <input type="text" class="input search-input" placeholder="Buscar miembro..."
-                   .value=${() => searchQuery.value} @input=${(e: any) => searchQuery.update(() => e.target.value)} />
-            <select class="input" @change=${(e: any) => roleFilter.update(() => e.target.value)}>
+                   value=${() => this.search.value.value} @input=${(e: any) => this.search.setValue(e.target.value)} />
+            <select class="input" @change=${(e: any) => this.roleFilter.update(() => e.target.value)}>
                 <option value="">Todos los roles</option>
                 <option value="admin">Admin</option>
                 <option value="lider">Líder</option>
                 <option value="piloto">Piloto</option>
             </select>
+            <div class="toolbar-spacer"></div>
+            <span class="text-secondary">${() => this.filtered().length} miembros</span>
         </div>
         <div class="data-table-wrapper">
-            ${() => loading.value
-            ? SkeletonTable(5)
-            : html`
+            ${() => this.membersQuery.status.value === 'pending'
+                ? SkeletonTable(5)
+                : this.membersQuery.status.value === 'error'
+                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar miembros</div>`
+                    : html`
                     <table class="data-table">
                         <thead>
-                            <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Nivel</th><th>Ingreso</th><th></th></tr>
+                            <tr><th>Miembro</th><th>Email</th><th>Rol</th><th>Nivel</th><th>Ingreso</th><th></th></tr>
                         </thead>
                         <tbody>
-                            ${filtered().map((m: any) => html`
-                                <tr @click=${() => router.navigate(`/members/${m.id}`)}>
-                                    <td><strong>${m.name || m.email}</strong></td>
-                                    <td>${m.email}</td>
-                                    <td><span class="badge badge-${m.role}">${m.role}</span></td>
-                                    <td>${m.skillLevel || '-'}</td>
-                                    <td>${m.createdAt ? new Date(m.createdAt).toLocaleDateString('es-CO') : '-'}</td>
+                            ${this.filtered().map((m: any) => html`
+                                <tr @click=${() => this.router.navigate(`/members/${m.id}`)}>
                                     <td>
-                                        <button class="btn-icon" @click.stop=${() => router.navigate(`/members/${m.id}`)}>
-                                            <ion-icon name="eye-outline"></ion-icon>
-                                        </button>
+                                        <div style="display:flex;align-items:center;gap:var(--mc-space-3);">
+                                            <div class="avatar avatar-sm">${this.getInitials(m.name || m.email)}</div>
+                                            <strong>${m.name || m.email}</strong>
+                                        </div>
+                                    </td>
+                                    <td>${m.email}</td>
+                                    <td><span class="badge badge-${m.role}">${formatEnum(m.role)}</span></td>
+                                    <td>${formatEnum(m.skillLevel || m.rider_level)}</td>
+                                    <td>${m.createdAt || m.joined_at ? new Date(m.createdAt || m.joined_at).toLocaleDateString('es-CO') : '-'}</td>
+                                    <td>
+                                        <div class="actions">
+                                            <button class="btn-icon" @click.stop=${() => this.router.navigate(`/members/${m.id}`)} title="Ver perfil">
+                                                <ion-icon name="eye-outline"></ion-icon>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             `)}
                         </tbody>
                     </table>
-                    ${!filtered().length ? html`<p class="empty">No se encontraron miembros.</p>` : ''}
+                    ${!this.filtered().length ? html`
+                        <div class="empty">
+                            <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+                            <h4>No se encontraron miembros</h4>
+                            <p>Prueba ajustando los filtros o invita nuevos miembros.</p>
+                        </div>
+                    ` : ''}
                 `}
         </div>
     `;
+    }
 }

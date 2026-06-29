@@ -21,12 +21,24 @@ export function showToast(message: string, type: ToastType = 'info') {
     }, 4000);
 }
 
+function toastIcon(type: ToastType): string {
+    switch (type) {
+        case 'success': return 'checkmark-circle-outline';
+        case 'error': return 'alert-circle-outline';
+        case 'warning': return 'warning-outline';
+        case 'info': return 'information-circle-outline';
+    }
+}
+
 export function ToastContainer(): NixTemplate {
     return html`
         <div class="toast-container">
             ${() => toastStore.items.value.map(t => html`
-                <div class="toast toast-${t.type}" @click=${() => toastStore.items.update(arr => arr.filter(x => x.id !== t.id))}>
-                    <span>${t.message}</span>
+                <div class=${`toast toast-${t.type}`} @click=${() => toastStore.items.update(arr => arr.filter(x => x.id !== t.id))}>
+                    <div style="display:flex;align-items:center;gap:var(--mc-space-2);">
+                        <ion-icon name=${toastIcon(t.type)}></ion-icon>
+                        <span>${t.message}</span>
+                    </div>
                     <ion-icon name="close-outline"></ion-icon>
                 </div>
             `)}

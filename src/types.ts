@@ -8,7 +8,9 @@ export interface Club {
     slug: string;
     city?: string;
     department?: string;
+    description?: string;
     logo?: string;
+    role?: ClubRole;
     createdAt: string;
 }
 
@@ -35,7 +37,7 @@ export interface Event {
     time: string;
     meetingPoint: string;
     difficulty: 'suave' | 'off_road' | 'viaje_largo' | 'expertos';
-    status: 'proximo' | 'en_curso' | 'completado' | 'cancelado';
+    status: 'borrador' | 'proximo' | 'en_curso' | 'completado' | 'cancelado';
     routeId?: string;
     attendees: EventAttendee[];
     checklist: ChecklistItem[];
@@ -43,10 +45,12 @@ export interface Event {
     createdAt: string;
 }
 
+export type RideRole = 'rider' | 'puntero' | 'barredora' | 'capitan_ruta' | 'medic' | 'cierre_seguridad';
+
 export interface EventAttendee {
     userId: string;
     userName: string;
-    rideRole: 'rider' | 'sweep' | 'lider_de_ruta' | 'medic';
+    rideRole: RideRole;
     confirmed: boolean;
 }
 
@@ -60,6 +64,8 @@ export interface InventoryItem {
     id: string;
     name: string;
     description?: string;
+    category?: 'herramienta' | 'seguridad' | 'comida' | 'otros' | string;
+    quantity?: number;
     totalQuantity: number;
     claimedBy?: string;
 }

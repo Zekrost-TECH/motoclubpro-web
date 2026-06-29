@@ -1,31 +1,42 @@
-import { html, signal } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
-import { login, authStore } from '../../stores/auth.store';
-import { loadClubs } from '../../stores/clubs.store';
-import { clubsStore } from '../../stores/clubs.store';
 import { router } from '../../router';
+import { html, NixComponent, signal, createForm, required, email as emailValidator } from '@deijose/nix-js';
+import { login, authStore } from '../../stores/auth.store';
+import { loadClubs, clubsStore } from '../../stores/clubs.store';
 
-export function LoginPage(): NixTemplate {
-    document.title = 'Ingresar | MotoClub Pro';
-    const email = signal('');
-    const password = signal('');
-    const showPassword = signal(false);
+export class LoginPage extends NixComponent {
+    private router = router;
+    form = createForm(
+        { email: '', password: '' },
+        {
+            validators: {
+                email: [required(), emailValidator()],
+                password: [required()],
+            },
+            validateOn: 'submit',
+        }
+    );
+    showPassword = signal(false);
 
-    async function handleSubmit() {
-        const ok = await login(email.value, password.value);
+    onMount() {
+        document.title = 'Ingresar | MotoClub Pro';
+    }
+
+    async handleSubmit(values: { email: string; password: string }) {
+        const ok = await login(values.email, values.password);
         if (ok) {
             await loadClubs();
-            const clubs = clubsStore.myClubs.value;
+            const clubs = clubsStore.myClubs.value || [];
             const active = clubsStore.activeClub.value;
             if (clubs.length > 1 && !active) {
-                router.navigate('/select-club');
+                this.router.navigate('/select-club');
             } else {
-                router.navigate('/');
+                this.router.navigate('/dashboard');
             }
         }
     }
 
-    return html`
+    render() {
+        return html`
         <div class="auth-page">
             <div class="auth-card">
                 <div class="auth-header">
@@ -33,26 +44,30 @@ export function LoginPage(): NixTemplate {
                     <h1>MotoClub Pro</h1>
                     <p>Plataforma de Administración</p>
                 </div>
-                <form @submit.prevent=${handleSubmit}>
+                <form @submit.prevent=${this.form.handleSubmit((values) => this.handleSubmit(values))}>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" .value=${() => email.value} @input=${(e: any) => email.update(() => e.target.value)} placeholder="admin@club.com" required />
+                        <input type="email" value=${() => this.form.fields.email.value.value} @input=${this.form.fields.email.onInput} placeholder="admin@club.com" required />
+                        ${() => this.form.fields.email.error.value ? html`<p class="form-error">${this.form.fields.email.error.value}</p>` : ''}
                     </div>
                     <div class="form-group">
                         <label>Contraseña</label>
                         <div class="input-group">
-                            <input type=${() => showPassword.value ? 'text' : 'password'} .value=${() => password.value} @input=${(e: any) => password.update(() => e.target.value)} placeholder="••••••" required />
-                            <button type="button" class="input-addon" @click=${() => showPassword.update(v => !v)}>
-                                <ion-icon name=${() => showPassword.value ? 'eye-off-outline' : 'eye-outline'}></ion-icon>
+                            <input type=${() => this.showPassword.value ? 'text' : 'password'} value=${() => this.form.fields.password.value.value} @input=${this.form.fields.password.onInput} placeholder="••••••" required />
+                            <button type="button" class="input-addon" @click=${() => this.showPassword.update(v => !v)}>
+                                <ion-icon name=${() => this.showPassword.value ? 'eye-off-outline' : 'eye-outline'}></ion-icon>
                             </button>
                         </div>
+                        ${() => this.form.fields.password.error.value ? html`<p class="form-error">${this.form.fields.password.error.value}</p>` : ''}
                     </div>
-                    ${() => authStore.error.value ? html`<div class="alert alert-error">${authStore.error.value}</div>` : ''}
-                    <button type="submit" class="btn btn-primary btn-block" ?disabled=${() => authStore.isLoading.value}>
-                        ${() => authStore.isLoading.value ? 'Ingresando...' : 'Ingresar'}
+                    ${() => authStore.error.value ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> ${authStore.error.value}</div>` : ''}
+                    <button type="submit" class="btn btn-primary btn-block" disabled=${() => authStore.isLoading.value || this.form.isSubmitting.value}>
+                        <ion-icon name="log-in-outline"></ion-icon>
+                        ${() => authStore.isLoading.value || this.form.isSubmitting.value ? 'Ingresando...' : 'Ingresar'}
                     </button>
                 </form>
             </div>
         </div>
     `;
+    }
 }

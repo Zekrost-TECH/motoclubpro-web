@@ -1,35 +1,59 @@
-import { createRouter, signal, html } from '@deijose/nix-js';
+import { createRouter } from '@deijose/nix-js';
 import { authStore } from './stores/auth.store';
-
-export const currentPath = signal(window.location.hash.replace('#', '') || '/');
+import { routerPath } from './stores/router.store';
+import { AppLayout } from './components/layout/AppLayout';
+import { LoginPage } from './pages/auth/LoginPage';
+import { ClubSelectorPage } from './pages/clubs/ClubSelectorPage';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { EventsListPage } from './pages/events/EventsListPage';
+import { EventCreatePage } from './pages/events/EventCreatePage';
+import { EventDetailPage } from './pages/events/EventDetailPage';
+import { EventEditPage } from './pages/events/EventEditPage';
+import { RoutesListPage } from './pages/routes/RoutesListPage';
+import { RouteCreatePage } from './pages/routes/RouteCreatePage';
+import { RouteDetailPage } from './pages/routes/RouteDetailPage';
+import { RouteEditPage } from './pages/routes/RouteEditPage';
+import { MembersListPage } from './pages/members/MembersListPage';
+import { MemberInvitePage } from './pages/members/MemberInvitePage';
+import { MemberProfilePage } from './pages/members/MemberProfilePage';
+import { SupportPointsPage } from './pages/support/SupportPointsPage';
+import { BillingPage } from './pages/billing/BillingPage';
+import { ReportsPage } from './pages/reports/ReportsPage';
+import { SettingsPage } from './pages/settings/SettingsPage';
 
 export const router = createRouter([
-    { path: '/login', component: () => html`` },
-    { path: '/select-club', component: () => html`` },
-    { path: '/', component: () => html`` },
-    { path: '/events', component: () => html`` },
-    { path: '/events/create', component: () => html`` },
-    { path: '/events/:id', component: () => html`` },
-    { path: '/events/:id/edit', component: () => html`` },
-    { path: '/routes', component: () => html`` },
-    { path: '/routes/create', component: () => html`` },
-    { path: '/routes/:id', component: () => html`` },
-    { path: '/routes/:id/edit', component: () => html`` },
-    { path: '/members', component: () => html`` },
-    { path: '/members/invite', component: () => html`` },
-    { path: '/members/:id', component: () => html`` },
-    { path: '/support', component: () => html`` },
-    { path: '/billing', component: () => html`` },
-    { path: '/reports', component: () => html`` },
-    { path: '/settings', component: () => html`` },
-    { path: '*', component: () => html`` },
-], { mode: 'hash' });
+    {
+        path: '/',
+        component: () => new AppLayout(),
+        children: [
+            { path: '/dashboard', component: () => new DashboardPage() },
+            { path: '/events', component: () => new EventsListPage() },
+            { path: '/events/create', component: () => new EventCreatePage() },
+            { path: '/events/:id', component: () => new EventDetailPage() },
+            { path: '/events/:id/edit', component: () => new EventEditPage() },
+            { path: '/routes', component: () => new RoutesListPage() },
+            { path: '/routes/create', component: () => new RouteCreatePage() },
+            { path: '/routes/:id', component: () => new RouteDetailPage() },
+            { path: '/routes/:id/edit', component: () => new RouteEditPage() },
+            { path: '/members', component: () => new MembersListPage() },
+            { path: '/members/invite', component: () => new MemberInvitePage() },
+            { path: '/members/:id', component: () => new MemberProfilePage() },
+            { path: '/support', component: () => new SupportPointsPage() },
+            { path: '/billing', component: () => new BillingPage() },
+            { path: '/reports', component: () => new ReportsPage() },
+            { path: '/settings', component: () => new SettingsPage() },
+        ],
+    },
+    { path: '/login', component: () => new LoginPage() },
+    { path: '/select-club', component: () => new ClubSelectorPage() },
+    { path: '*', component: () => new AppLayout() },
+], { mode: 'history' });
 
 router.beforeEach((to) => {
-    currentPath.update(() => to);
-    if (to !== '/login' && to !== '/select-club' && !authStore.currentUser.value) {
-        return '/login';
-    }
+    routerPath.update(() => to);
+    const user = authStore.currentUser.value;
+    if (to === '/login' && user) return '/';
+    if (to !== '/login' && to !== '/select-club' && !user) return '/login';
     return undefined;
 });
 
@@ -53,4 +77,7 @@ export function requireAdmin(): boolean {
     }
     return true;
 }
+
+export { authStore };
+
 
