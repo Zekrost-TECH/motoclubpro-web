@@ -1,6 +1,6 @@
 import { router } from '../../router';
 import { html, signal, NixComponent, createForm, required, watch } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { createQuery, createCommand, invalidateQueries, updateQueryData } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import { formatEnum } from '../../utils/labels';
@@ -23,8 +23,7 @@ export class SupportPointDetailPage extends NixComponent {
     isEditing = signal(false);
     isCreate = signal(false);
     isEditRoute = signal(false);
-    verifyLabel = signal('Verificar');
-    verifyClass = signal('btn-primary');
+    isVerifying = signal(false);
 
     get pointId() { return this.router.params.value?.id || ''; }
     get isView() { return !this.isCreate.value && !this.isEditRoute.value; }
@@ -83,7 +82,13 @@ export class SupportPointDetailPage extends NixComponent {
         async ({ id, verified }: { id: string; verified: boolean }) => api.supportPoints.verify(id, verified),
         {
             mode: 'latest',
-            onSuccess: () => invalidateQueries('support-points/detail'),
+            onSuccess: (result) => {
+                updateQueryData<SupportPoint>('support-points/detail', (current) =>
+                    (current ? { ...current, verified: result.verified } : current) as SupportPoint
+                    , { params: { id: this.pointId } });
+                this.isVerifying.update(() => false);
+            },
+            onError: () => this.isVerifying.update(() => false),
         }
     );
 
@@ -107,8 +112,6 @@ export class SupportPointDetailPage extends NixComponent {
                     lat: point.lat != null ? String(point.lat) : '',
                     lng: point.lng != null ? String(point.lng) : '',
                 });
-                this.verifyLabel.update(() => point.verified ? 'Rechazar' : 'Verificar');
-                this.verifyClass.update(() => point.verified ? 'btn-danger' : 'btn-primary');
             },
             { immediate: true }
         );
@@ -170,6 +173,7 @@ export class SupportPointDetailPage extends NixComponent {
     async toggleVerify() {
         const point = this.pointQuery.data.value;
         if (!point) return;
+        this.isVerifying.update(() => true);
         try {
             await this.verifyCommand.executeAsync({ id: point.id, verified: !point.verified });
             showToast(point.verified ? 'Punto rechazado' : 'Punto verificado', 'success');
@@ -257,14 +261,17 @@ export class SupportPointDetailPage extends NixComponent {
     }
 
     renderDetail(point: SupportPoint) {
-        const badgeClass = point.verified ? 'badge-success' : 'badge-warning';
-        const badgeText = point.verified ? 'Verificado' : 'Pendiente';
+        const isVerified = () => this.pointQuery.data.value?.verified ?? point.verified;
+        const badgeClass = () => isVerified() ? 'badge-success' : 'badge-warning';
+        const badgeText = () => isVerified() ? 'Verificado' : 'Pendiente';
+        const verifyBtnClass = () => isVerified() ? 'btn-danger' : 'btn-primary';
+        const verifyBtnText = () => isVerified() ? 'Rechazar' : 'Verificar';
         return html`
         <div class="dashboard-grid">
             <div class="dashboard-card">
                 <div class="card-header">
                     <h3>${point.name}</h3>
-                    <span class="badge ${badgeClass}">${badgeText}</span>
+                    <span class=${() => `badge ${badgeClass()}`}>${() => badgeText()}</span>
                 </div>
                 <div class="card-body">
                     <div class="stats-grid">
@@ -280,8 +287,8 @@ export class SupportPointDetailPage extends NixComponent {
                         <strong>Lat: ${point.lat}, Lng: ${point.lng}</strong>
                     </div>
                     <div class="form-actions" style="margin-top:var(--mc-space-4);">
-                        <button class=${() => `btn ${this.verifyClass.value}`} @click=${() => this.toggleVerify()} disabled=${() => this.verifyCommand.isPending.value}>
-                            ${() => this.verifyCommand.isPending.value ? '...' : this.verifyLabel.value}
+                        <button class=${() => `btn ${verifyBtnClass()}`} @click=${() => this.toggleVerify()} disabled=${() => this.isVerifying.value}>
+                            ${() => this.isVerifying.value ? '...' : verifyBtnText()}
                         </button>
                     </div>
                 </div>

@@ -6,7 +6,7 @@
       "name": "ironbikers-web",
       "dependencies": {
         "@deijose/nix-js": "^2.6.0",
-        "@deijose/nix-query": "^1.4.1",
+        "@deijose/nix-query": "^1.4.2",
         "@deijose/vite-plugin-nix-js": "^1.0.0",
         "@types/node": "^26.0.0",
         "chart.js": "^4.5.1",
@@ -54,7 +54,7 @@
 
     "@deijose/nix-js": ["@deijose/nix-js@2.6.0", "", {}, "sha512-5ILcfTBIGEEscRnIwJJ4uRcJzsS665tD2TLe+zAtxGC6yO+6qr5Haq61GVsDvTwDdiX0LmQWEXOQnp7HrmPp/Q=="],
 
-    "@deijose/nix-query": ["@deijose/nix-query@1.4.1", "", { "peerDependencies": { "@deijose/nix-js": "^2.5.3" } }, "sha512-zcyh06V7FjVFTiB4EI89AcOrzriu77ZpouLUjTcskSl8jcLj7p3lXysHef+dewsMggXEUeDrNjuyk11MNyqJ8g=="],
+    "@deijose/nix-query": ["@deijose/nix-query@1.4.2", "", { "peerDependencies": { "@deijose/nix-js": "^2.5.3" } }, "sha512-U7LZl2tvxEyPA82VAfogWS212L5VGTUSTOjegWDGcfckjrV9t0eQdeBcLeFuZPABGg3ZwFHs530F0E7aOGWfIQ=="],
 
     "@deijose/vite-plugin-nix-js": ["@deijose/vite-plugin-nix-js@1.0.0", "", { "dependencies": { "@babel/core": "^7.26.0", "@babel/generator": "^7.26.0", "@babel/parser": "^7.26.0", "@babel/traverse": "^7.26.0", "@babel/types": "^7.26.0" }, "peerDependencies": { "@deijose/nix-js": "^2.5.3", "vite": "^8.0.0" } }, "sha512-61t9kUdwqNDTIeXgOm1gLihWhYoGjXgZmWuAIw6fkuk1/5nWwZut9dRU44yQP6GPXOxarhsdoVOsS7aE48wcQA=="],
 

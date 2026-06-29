@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@deijose/nix-js": "^2.6.0",
-    "@deijose/nix-query": "^1.4.1",
+    "@deijose/nix-query": "^1.4.2",
     "@deijose/vite-plugin-nix-js": "^1.0.0",
     "@types/node": "^26.0.0",
     "chart.js": "^4.5.1",
