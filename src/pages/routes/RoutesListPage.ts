@@ -8,6 +8,7 @@ import { formatEnum } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
 import type { Route } from '../../types';
 import { activeClub } from '../../stores/clubs.store';
+import { setPageTitle } from '../../stores/router.store';
 
 export class RoutesListPage extends NixComponent {
     search = createDebounced('', 300);
@@ -32,7 +33,7 @@ export class RoutesListPage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Rutas | MotoClub Pro';
+        setPageTitle('Rutas');
     }
 
     filtered(): Route[] {

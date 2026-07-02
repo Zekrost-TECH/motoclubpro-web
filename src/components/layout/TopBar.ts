@@ -4,6 +4,7 @@ import { currentUser } from '../../stores/auth.store';
 import { activeClub, myClubs } from '../../stores/clubs.store';
 import { switchClub } from '../../stores/clubs.store';
 import { toggleMobileMenu } from '../../stores/ui.store';
+import { pageTitle } from '../../stores/router.store';
 
 function getInitials(name?: string): string {
     if (!name) return '?';
@@ -19,7 +20,7 @@ export function TopBar(): NixTemplate {
                 <button class="mobile-menu-toggle" @click=${toggleMobileMenu} aria-label="Abrir menú">
                     <ion-icon name="menu-outline"></ion-icon>
                 </button>
-                <h1 class="page-title">${() => document.title}</h1>
+                <h1 class="page-title">${() => pageTitle.value}</h1>
             </div>
             <div class="topbar-right">
                 ${() => {

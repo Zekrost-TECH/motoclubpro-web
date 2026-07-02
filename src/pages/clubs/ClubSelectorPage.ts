@@ -1,4 +1,5 @@
 import { router } from '../../router';
+import { setPageTitle } from '../../stores/router.store';
 import { html, NixComponent } from '@deijose/nix-js';
 import { myClubs, switchClub } from '../../stores/clubs.store';
 
@@ -6,7 +7,7 @@ export class ClubSelectorPage extends NixComponent {
     private router = router;
 
     onMount() {
-        document.title = 'Seleccionar Club | MotoClub Pro';
+        setPageTitle('Seleccionar Club');
     }
 
     async selectClub(clubId: string) {

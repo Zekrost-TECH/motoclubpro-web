@@ -3,6 +3,7 @@ import { html, signal, NixComponent } from '@deijose/nix-js';
 import { createQuery } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
+import { setPageTitle } from '../../stores/router.store';
 import { SkeletonTable } from '../../components/Skeleton';
 import { formatEnum } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
@@ -26,7 +27,7 @@ export class MembersListPage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Miembros | MotoClub Pro';
+        setPageTitle('Miembros');
     }
 
     getInitials(name?: string): string {

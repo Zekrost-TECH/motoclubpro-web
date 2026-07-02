@@ -8,7 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@deijose/nix-i18n": "^1.2.1",
     "@deijose/nix-js": "^2.6.0",
+    "@deijose/nix-js-auth": "^1.1.0",
     "@deijose/nix-query": "^1.4.2",
     "@deijose/vite-plugin-nix-js": "^1.0.0",
     "@types/node": "^26.0.0",

@@ -2,6 +2,7 @@ import { html, signal, NixComponent, effect, repeat } from '@deijose/nix-js';
 import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
+import { setPageTitle } from '../../stores/router.store';
 import { showToast } from '../../components/Toast';
 import { SkeletonCard } from '../../components/Skeleton';
 import type { Subscription, Payment } from '../../types';
@@ -49,7 +50,7 @@ export class BillingPage extends NixComponent {
     }
 
     onMount() {
-        document.title = 'Suscripción | MotoClub Pro';
+        setPageTitle('Suscripción');
         const data = this.clubBillingQuery.data.value;
         if (data && !this._formLoaded) {
             this.fillForm(data);

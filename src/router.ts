@@ -18,6 +18,7 @@ import { MemberInvitePage } from './pages/members/MemberInvitePage';
 import { MemberProfilePage } from './pages/members/MemberProfilePage';
 import { SupportPointsPage } from './pages/support/SupportPointsPage';
 import { SupportPointDetailPage } from './pages/support/SupportPointDetailPage';
+import { SosPage } from './pages/sos/SosPage';
 import { BillingPage } from './pages/billing/BillingPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
@@ -43,6 +44,7 @@ export const router = createRouter([
             { path: '/support/create', component: () => new SupportPointDetailPage() },
             { path: '/support/:id', component: () => new SupportPointDetailPage() },
             { path: '/support/:id/edit', component: () => new SupportPointDetailPage() },
+            { path: '/sos', component: () => new SosPage() },
             { path: '/billing', component: () => new BillingPage() },
             { path: '/reports', component: () => new ReportsPage() },
             { path: '/settings', component: () => new SettingsPage() },

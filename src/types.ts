@@ -170,3 +170,29 @@ export interface Payment {
 }
 
 export type SOSType = 'pinchazo' | 'falla_mecanica' | 'accidente' | 'sin_gasolina' | 'medica' | 'otro';
+
+export type SosStatus = 'activa' | 'resuelta' | 'cancelada';
+
+export interface SosAlert {
+    id: string;
+    userId?: string;
+    user_id?: string;
+    userName?: string;
+    user_name?: string;
+    eventId?: string;
+    event_id?: string;
+    clubId?: string;
+    club_id?: string;
+    type: SOSType;
+    status: SosStatus;
+    description?: string;
+    resolvedBy?: string;
+    resolved_by?: string;
+    createdAt: string;
+    created_at: string;
+    resolvedAt?: string;
+    resolved_at?: string;
+    lat?: number;
+    lng?: number;
+    timeAgo?: string;
+}

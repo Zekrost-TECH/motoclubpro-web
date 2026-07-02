@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
     { label: 'Rutas', path: '/routes', icon: 'map-outline' },
     { label: 'Miembros', path: '/members', icon: 'people-outline' },
     { label: 'Puntos de Apoyo', path: '/support', icon: 'location-outline' },
+    { label: 'SOS', path: '/sos', icon: 'warning-outline' },
     { label: 'Suscripción', path: '/billing', icon: 'card-outline', admin: true },
     { label: 'Reportes', path: '/reports', icon: 'bar-chart-outline', admin: true },
     { label: 'Configuración', path: '/settings', icon: 'settings-outline', admin: true },

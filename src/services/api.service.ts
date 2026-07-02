@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle } from '../types';
+import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle, SosAlert } from '../types';
 import { router } from '../router';
 
 const BASE_URL = (import.meta as any).env.VITE_WEB_API_URL || 'http://localhost:3000/api/v1';
@@ -328,8 +328,9 @@ export const api = {
         reviews: (id: string) => request<any[]>(`/support/${id}/reviews`),
     },
     sos: {
-        active: () => request<any[]>('/sos/active'),
-        resolve: (id: string) => request<any>(`/sos/${id}/resolve`, { method: 'PATCH' }),
+        list: () => request<SosAlert[]>('/sos'),
+        active: () => request<SosAlert[]>('/sos/active'),
+        resolve: (id: string) => request<SosAlert>(`/sos/${id}/resolve`, { method: 'PATCH' }),
     },
     billing: {
         subscription: () => request<Subscription>('/billing/subscription'),
@@ -340,6 +341,7 @@ export const api = {
         sos: (from: string, to: string) => request<any>(`/reports/sos?from=${from}&to=${to}`),
         members: () => request<any>('/reports/members'),
         financial: (from: string, to: string) => request<any>(`/reports/financial?from=${from}&to=${to}`),
+        supportPoints: () => request<any>('/reports/support-points'),
     },
 };
 

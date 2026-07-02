@@ -4,6 +4,7 @@ import { createCommand, createQuery, invalidateQueries } from '@deijose/nix-quer
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import type { Event } from '../../types';
+import { setPageTitle } from '../../stores/router.store';
 
 export class EventCreatePage extends NixComponent {
     title = signal('');
@@ -31,7 +32,7 @@ export class EventCreatePage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Nueva Rodada | MotoClub Pro';
+        setPageTitle('Nueva Rodada');
     }
 
     async handleSubmit() {

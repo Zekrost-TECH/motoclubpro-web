@@ -4,6 +4,7 @@ import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-quer
 import { api } from '../../services/api.service';
 import type { Event as EventModel, EventAttendee, ChecklistItem, InventoryItem, RideRole, Route } from '../../types';
 import { showToast } from '../../components/Toast';
+import { setPageTitle } from '../../stores/router.store';
 import { openConfirm } from '../../components/ConfirmModal';
 import { formatEnum } from '../../utils/labels';
 
@@ -133,7 +134,7 @@ export class EventDetailPage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Detalle de Rodada | MotoClub Pro';
+        setPageTitle('Detalle de Rodada');
     }
 
     onUnmount() {

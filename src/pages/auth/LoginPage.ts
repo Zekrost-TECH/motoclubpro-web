@@ -1,4 +1,5 @@
 import { router } from '../../router';
+import { setPageTitle } from '../../stores/router.store';
 import { html, NixComponent, signal, createForm, required, email as emailValidator } from '@deijose/nix-js';
 import { login, authStore } from '../../stores/auth.store';
 import { loadClubs, clubsStore } from '../../stores/clubs.store';
@@ -18,7 +19,7 @@ export class LoginPage extends NixComponent {
     showPassword = signal(false);
 
     onMount() {
-        document.title = 'Ingresar | MotoClub Pro';
+        setPageTitle('Ingresar');
     }
 
     async handleSubmit(values: { email: string; password: string }) {

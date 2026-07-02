@@ -1,4 +1,5 @@
 import { router } from '../../router';
+import { setPageTitle } from '../../stores/router.store';
 import { html, signal, NixComponent, createForm, required, watch } from '@deijose/nix-js';
 import { createQuery, createCommand, invalidateQueries, updateQueryData } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
@@ -119,12 +120,12 @@ export class SupportPointDetailPage extends NixComponent {
 
     onMount() {
         if (this.isCreate.value) {
-            document.title = 'Nuevo Punto de Apoyo | MotoClub Pro';
+            setPageTitle('Nuevo Punto de Apoyo');
             this.form.reset({
                 name: '', type: 'taller', city: '', address: '', phone: '', hours: '', lat: '', lng: '',
             });
         } else {
-            document.title = 'Punto de Apoyo | MotoClub Pro';
+            setPageTitle('Punto de Apoyo');
         }
     }
 

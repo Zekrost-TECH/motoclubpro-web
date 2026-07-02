@@ -3,6 +3,7 @@ import { html, NixComponent, createForm, required, watch } from '@deijose/nix-js
 import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
+import { setPageTitle } from '../../stores/router.store';
 import type { Event } from '../../types';
 
 export class EventEditPage extends NixComponent {
@@ -74,7 +75,7 @@ export class EventEditPage extends NixComponent {
     }
 
     onMount() {
-        document.title = 'Editar Rodada | MotoClub Pro';
+        setPageTitle('Editar Rodada');
     }
 
     onUnmount() {

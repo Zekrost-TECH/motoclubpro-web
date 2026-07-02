@@ -1,4 +1,5 @@
 import { router } from '../../router';
+import { setPageTitle } from '../../stores/router.store';
 import { html, signal, NixComponent } from '@deijose/nix-js';
 import { createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
@@ -21,7 +22,7 @@ export class MemberInvitePage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Invitar Miembro | MotoClub Pro';
+        setPageTitle('Invitar Miembro');
     }
 
     async handleSubmit() {

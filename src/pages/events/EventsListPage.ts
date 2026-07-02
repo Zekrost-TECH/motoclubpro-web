@@ -7,6 +7,7 @@ import { SkeletonTable } from '../../components/Skeleton';
 import { formatEnum } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
 import { activeClub } from '../../stores/clubs.store';
+import { setPageTitle } from '../../stores/router.store';
 
 export class EventsListPage extends NixComponent {
     statusFilter = signal('');
@@ -32,7 +33,7 @@ export class EventsListPage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Rodadas | MotoClub Pro';
+        setPageTitle('Rodadas');
     }
 
     filteredEvents() {

@@ -2,6 +2,7 @@ import { html, NixComponent, createForm, required } from '@deijose/nix-js';
 import { createQuery, createCommand, setQueryData } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
+import { setPageTitle } from '../../stores/router.store';
 import { showToast } from '../../components/Toast';
 import { SkeletonCard } from '../../components/Skeleton';
 import { themeStore } from '../../stores/theme.store';
@@ -46,7 +47,7 @@ export class SettingsPage extends NixComponent {
     );
 
     onInit() {
-        document.title = 'Configuración | MotoClub Pro';
+        setPageTitle('Configuración');
     }
 
     onMount() {

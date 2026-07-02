@@ -5,6 +5,7 @@ import { api } from '../../services/api.service';
 import type { Route, Waypoint } from '../../types';
 import { MapView } from '../../components/MapView';
 import { formatEnum } from '../../utils/labels';
+import { setPageTitle } from '../../stores/router.store';
 
 export class RouteDetailPage extends NixComponent {
     private router = router;
@@ -35,7 +36,7 @@ export class RouteDetailPage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Detalle de Ruta | MotoClub Pro';
+        setPageTitle('Detalle de Ruta');
     }
 
     get route() { return this.routeQuery.data.value as Route | null; }

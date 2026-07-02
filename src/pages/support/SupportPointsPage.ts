@@ -1,4 +1,5 @@
 import { router } from '../../router';
+import { setPageTitle } from '../../stores/router.store';
 import { html, signal, NixComponent, repeat } from '@deijose/nix-js';
 import { createQuery, createCommand, updateQueryData } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
@@ -29,7 +30,7 @@ export class SupportPointsPage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Puntos de Apoyo | MotoClub Pro';
+        setPageTitle('Puntos de Apoyo');
     }
 
     filtered() {
@@ -94,12 +95,14 @@ export class SupportPointsPage extends NixComponent {
                                     <td><span class=${`badge ${badgeClass}`}>${badgeText}</span></td>
                                     <td><ion-icon name="star" style="color:var(--mc-warning-500);"></ion-icon> ${p.rating || 0} (${p.reviewCount || 0})</td>
                                     <td>
-                                        <button class=${btnClass} @click.stop=${() => this.verifyPoint(p.id, p.verified)} disabled=${() => isVerifying()}>
-                                            ${() => isVerifying() ? '...' : verifyBtnText}
-                                        </button>
-                                        <button class="btn btn-sm btn-secondary" @click.stop=${() => this.router.navigate(`/support/${p.id}/edit`)} title="Editar">
-                                            <ion-icon name="create-outline"></ion-icon>
-                                        </button>
+                                        <div class="table-actions">
+                                            <button class=${btnClass} @click.stop=${() => this.verifyPoint(p.id, p.verified)} disabled=${() => isVerifying()}>
+                                                ${() => isVerifying() ? '...' : verifyBtnText}
+                                            </button>
+                                            <button class="btn btn-sm btn-secondary" @click.stop=${() => this.router.navigate(`/support/${p.id}/edit`)} title="Editar">
+                                                <ion-icon name="create-outline"></ion-icon>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 `;

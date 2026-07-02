@@ -1,4 +1,5 @@
 import { router } from '../../router';
+import { setPageTitle } from '../../stores/router.store';
 import { html, NixComponent } from '@deijose/nix-js';
 import { createQuery } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
@@ -20,7 +21,7 @@ export class MemberProfilePage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Perfil de Miembro | MotoClub Pro';
+        setPageTitle('Perfil de Miembro');
     }
 
     get user() { return this.userQuery.data.value as User | null; }

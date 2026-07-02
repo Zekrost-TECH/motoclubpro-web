@@ -3,6 +3,7 @@ import { html, signal, NixComponent } from '@deijose/nix-js';
 import { createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
+import { setPageTitle } from '../../stores/router.store';
 import type { Route } from '../../types';
 
 export class RouteCreatePage extends NixComponent {
@@ -23,7 +24,7 @@ export class RouteCreatePage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Nueva Ruta | MotoClub Pro';
+        setPageTitle('Nueva Ruta');
     }
 
     async handleSubmit() {

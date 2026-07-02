@@ -769,6 +769,18 @@ select.input {
   justify-content: flex-end;
 }
 
+.table-actions {
+  display: flex;
+  gap: var(--mc-space-2);
+  align-items: center;
+  white-space: nowrap;
+}
+
+.table-actions .btn {
+  min-width: 90px;
+  justify-content: center;
+}
+
 /* ── Cards ──────────────────────────────────────────────────────────────── */
 .cards-grid {
   display: grid;

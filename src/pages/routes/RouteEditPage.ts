@@ -3,6 +3,7 @@ import { html, signal, NixComponent, createForm, required, watch } from '@deijos
 import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
+import { setPageTitle } from '../../stores/router.store';
 import type { Route } from '../../types';
 
 export class RouteEditPage extends NixComponent {
@@ -84,7 +85,7 @@ export class RouteEditPage extends NixComponent {
     }
 
     onMount() {
-        document.title = 'Editar Ruta | MotoClub Pro';
+        setPageTitle('Editar Ruta');
     }
 
     onUnmount() {

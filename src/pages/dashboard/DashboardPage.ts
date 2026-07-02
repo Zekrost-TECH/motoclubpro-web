@@ -4,7 +4,9 @@ import { createQuery } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { SkeletonKpi } from '../../components/Skeleton';
 import { activeClub } from '../../stores/clubs.store';
+import { setPageTitle } from '../../stores/router.store';
 import { formatEnum } from '../../utils/labels';
+import type { SosAlert } from '../../types';
 
 const now = new Date();
 const reportFrom = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
@@ -63,7 +65,7 @@ export class DashboardPage extends NixComponent {
     );
 
     onMount() {
-        document.title = 'Dashboard | MotoClub Pro';
+        setPageTitle('Dashboard');
     }
 
     isLoading() {
@@ -211,18 +213,24 @@ export class DashboardPage extends NixComponent {
                                     </div>
                                 `;
                 }
-                return alerts.map((a: any) => html`
+                return alerts.map((a: SosAlert) => {
+                    const mapsLink = a.lat != null && a.lng != null
+                        ? `https://www.google.com/maps?q=${a.lat},${a.lng}`
+                        : null;
+                    return html`
                                 <div class="sos-list-item">
                                     <div class="sos-icon">
                                         <ion-icon name="warning-outline"></ion-icon>
                                     </div>
                                     <div class="sos-info">
-                                        <h4>${a.userName || 'Usuario desconocido'}</h4>
+                                        <h4>${a.user_name || a.userName || a.user_id || 'Usuario desconocido'}</h4>
                                         <p>${formatEnum(a.type) || 'SOS'} · ${a.timeAgo || 'Hace unos minutos'}</p>
                                     </div>
+                                    ${mapsLink ? html`<a href=${mapsLink} target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><ion-icon name="location-outline"></ion-icon></a>` : ''}
                                     <span class="badge badge-danger">Activo</span>
                                 </div>
-                            `);
+                            `;
+                });
             }}
                     </div>
                 </div>
