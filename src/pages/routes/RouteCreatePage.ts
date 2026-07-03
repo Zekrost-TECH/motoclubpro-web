@@ -4,6 +4,7 @@ import { createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import { setPageTitle } from '../../stores/router.store';
+import { hasFeature } from '../../stores/plans.store';
 import type { Route } from '../../types';
 
 export class RouteCreatePage extends NixComponent {
@@ -25,6 +26,9 @@ export class RouteCreatePage extends NixComponent {
 
     onMount() {
         setPageTitle('Nueva Ruta');
+        if (!hasFeature('route_library')) {
+            this.router.navigate('/dashboard');
+        }
     }
 
     async handleSubmit() {

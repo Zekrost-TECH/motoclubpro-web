@@ -127,7 +127,7 @@ export class BillingPage extends NixComponent {
                                     </div>`;
                             return html`
                                     <div class="plan-info">
-                                        <div class="plan-name">${(s.plan)?.toUpperCase()}</div>
+                                        <div class="plan-name">${(s.planName || s.planId || 'PLAN')?.toUpperCase()}</div>
                                         <div class="plan-status"><span class=${`badge badge-${s.status}`}>${s.status}</span></div>
                                         <div class="stat-list" style="margin-top:var(--mc-space-4);">
                                             <div class="stat-item"><span>Vigencia</span><strong>${s.startDate ? new Date(s.startDate).toLocaleDateString('es-CO') : '-'} — ${s.endDate ? new Date(s.endDate).toLocaleDateString('es-CO') : '-'}</strong></div>

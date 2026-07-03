@@ -1,7 +1,7 @@
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
 import { html, NixComponent, signal, createForm, required, email as emailValidator } from '@deijose/nix-js';
-import { login, authStore } from '../../stores/auth.store';
+import { login, authStore, logout } from '../../stores/auth.store';
 import { loadClubs, clubsStore } from '../../stores/clubs.store';
 
 export class LoginPage extends NixComponent {
@@ -27,6 +27,19 @@ export class LoginPage extends NixComponent {
         if (ok) {
             await loadClubs();
             const clubs = clubsStore.myClubs.value || [];
+            const userRole = authStore.currentUser.value?.role;
+            const adminClubs = clubs.filter((c) => c.role === 'admin' || c.role === 'leader' || c.role === 'superadmin');
+            if (userRole !== 'superadmin' && adminClubs.length === 0) {
+                authStore.error.update(() => 'No tienes permisos de administrador para acceder a este panel');
+                await logout();
+                return;
+            }
+            const webPanelClubs = adminClubs.filter((c) => c.features?.web_panel === true);
+            if (userRole !== 'superadmin' && webPanelClubs.length === 0) {
+                authStore.error.update(() => 'Tu plan actual no incluye acceso al panel web. Actualiza tu plan para continuar.');
+                await logout();
+                return;
+            }
             const active = clubsStore.activeClub.value;
             if (clubs.length > 1 && !active) {
                 this.router.navigate('/select-club');

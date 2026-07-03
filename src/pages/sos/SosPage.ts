@@ -6,12 +6,23 @@ import { SkeletonTable } from '../../components/Skeleton';
 import { formatEnum } from '../../utils/labels';
 import { openConfirm } from '../../components/ConfirmModal';
 import { MapView } from '../../components/MapView';
+import { FeatureLocked } from '../../components/FeatureLocked';
+import { hasFeature } from '../../stores/plans.store';
 import type { SosAlert, SosStatus } from '../../types';
 
 export class SosPage extends NixComponent {
     statusFilter = signal<'all' | SosStatus>('all');
+    page = signal(1);
+    pageSize = signal(10);
 
-    sosQuery = createQuery('sos/list', () => api.sos.list(), { staleTime: 30_000 });
+    sosQuery = createQuery(
+        'sos/list',
+        ({ page, pageSize }: { page: number; pageSize: number }) => api.sos.listPaginated(page, pageSize),
+        {
+            params: () => ({ page: this.page.value, pageSize: this.pageSize.value }),
+            staleTime: 30_000,
+        }
+    );
     resolveSos = createCommand(
         'sos/resolve',
         async (id: string) => api.sos.resolve(id),
@@ -29,9 +40,13 @@ export class SosPage extends NixComponent {
     }
 
     filtered() {
-        const list = this.sosQuery.data.value || [];
+        const list = this.sosQuery.data.value?.data || [];
         if (this.statusFilter.value === 'all') return list;
         return list.filter((a) => a.status === this.statusFilter.value);
+    }
+
+    paginationMeta() {
+        return this.sosQuery.data.value?.meta;
     }
 
     confirmResolve(id: string, type: string) {
@@ -66,6 +81,9 @@ export class SosPage extends NixComponent {
     }
 
     render() {
+        if (!hasFeature('support_points')) {
+            return html`${FeatureLocked({ feature: 'Alertas SOS', plan: 'Básico' })}`;
+        }
         return html`
         <div class="page-header">
             <div class="page-header-left">
@@ -74,14 +92,14 @@ export class SosPage extends NixComponent {
             </div>
         </div>
         <div class="toolbar">
-            <select class="input" @change=${(e: any) => this.statusFilter.update(() => e.target.value)}>
+            <select class="input" @change=${(e: any) => { this.statusFilter.update(() => e.target.value); this.page.update(() => 1); }}>
                 <option value="all">Todas</option>
                 <option value="activa">Activas</option>
                 <option value="resuelta">Resueltas</option>
                 <option value="cancelada">Canceladas</option>
             </select>
             <div class="toolbar-spacer"></div>
-            <span class="text-secondary">${() => this.filtered().length} alertas</span>
+            <span class="text-secondary">${() => this.paginationMeta()?.total || 0} alertas totales</span>
         </div>
         ${() => {
                 const waypoints = this.mapWaypoints();
@@ -134,6 +152,19 @@ export class SosPage extends NixComponent {
                         }}
                         </tbody>
                     </table>
+                    ${() => {
+                            const meta = this.paginationMeta();
+                            if (!meta || meta.totalPages <= 1) return '';
+                            const current = meta.page;
+                            const total = meta.totalPages;
+                            return html`
+                            <div class="pagination" style="display:flex;align-items:center;justify-content:center;gap:var(--mc-space-3);margin-top:var(--mc-space-4);">
+                                <button class="btn btn-sm" disabled=${current <= 1} @click=${() => this.page.update(v => Math.max(1, v - 1))}>Anterior</button>
+                                <span class="text-secondary">Página ${current} de ${total}</span>
+                                <button class="btn btn-sm" disabled=${current >= total} @click=${() => this.page.update(v => Math.min(total, v + 1))}>Siguiente</button>
+                            </div>
+                        `;
+                        }}
                 `}
         </div>
         `;

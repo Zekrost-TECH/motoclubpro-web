@@ -1,6 +1,6 @@
 // ── Shared types for web admin ────────────────────────────────────────────
 
-export type ClubRole = 'admin' | 'lider' | 'piloto';
+export type ClubRole = 'superadmin' | 'admin' | 'leader' | 'rider';
 
 export interface Club {
     id: string;
@@ -11,6 +11,7 @@ export interface Club {
     description?: string;
     logo?: string;
     role?: ClubRole;
+    features?: Record<string, boolean>;
     createdAt: string;
 }
 
@@ -60,7 +61,16 @@ export interface Event {
     createdAt: string;
 }
 
-export type RideRole = 'rider' | 'puntero' | 'barredora' | 'capitan_ruta' | 'medic' | 'cierre_seguridad';
+export type RideRole = string;
+
+export interface ClubRideRole {
+    id: string;
+    clubId: string;
+    slug: string;
+    name: string;
+    isUnique: boolean;
+    sortOrder: number;
+}
 
 export interface EventAttendee {
     userId: string;
@@ -151,9 +161,21 @@ export interface MaintenanceRecord {
     notes?: string;
 }
 
+export interface ClubLimits {
+    planId: string;
+    planName: string;
+    maxMembers: number;
+    maxEventsMonth: number;
+    currentMembers: number;
+    currentEventsMonth: number;
+    overageMemberCents: number;
+    features: Record<string, boolean>;
+}
+
 export interface Subscription {
-    plan: 'prueba' | 'basico' | 'premium' | 'enterprise';
-    status: 'activa' | 'cancelada' | 'vencida';
+    planId: string;
+    planName: string;
+    status: 'trial' | 'active' | 'past_due' | 'canceled' | 'suspended';
     startDate: string;
     endDate: string;
     memberLimit: number;

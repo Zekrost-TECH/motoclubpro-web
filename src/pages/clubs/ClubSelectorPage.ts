@@ -34,7 +34,7 @@ export class ClubSelectorPage extends NixComponent {
                                 <h3>${club.name}</h3>
                                 <p>${club.city || ''} ${club.department || ''}</p>
                             </div>
-                            <span class="badge badge-${club.role || 'piloto'}">${club.role || 'piloto'}</span>
+                            <span class="badge badge-${club.role || 'rider'}">${club.role || 'rider'}</span>
                             <ion-icon name="chevron-forward-outline"></ion-icon>
                         </button>
                     `)}

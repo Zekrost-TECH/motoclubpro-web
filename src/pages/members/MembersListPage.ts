@@ -5,8 +5,9 @@ import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
 import { SkeletonTable } from '../../components/Skeleton';
-import { formatEnum } from '../../utils/labels';
+import { formatEnum, ROLE_LABELS } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
+import { clubLimitsQuery, refreshClubLimits, canAddMember, memberLimitText, isAtMemberLimit } from '../../stores/plans.store';
 import type { Member } from '../../types';
 
 export class MembersListPage extends NixComponent {
@@ -28,6 +29,7 @@ export class MembersListPage extends NixComponent {
 
     onMount() {
         setPageTitle('Miembros');
+        refreshClubLimits();
     }
 
     getInitials(name?: string): string {
@@ -53,7 +55,10 @@ export class MembersListPage extends NixComponent {
                 <p class="page-subtitle">Gestiona los pilotos de ${() => activeClub.value?.name || 'tu club'}</p>
             </div>
             <div class="page-header-actions">
-                <button class="btn btn-primary" @click=${() => this.router.navigate('/members/invite')}>
+                <span class="badge ${() => isAtMemberLimit() ? 'badge-danger' : 'badge-secondary'}" style="margin-right:var(--mc-space-3);">
+                    ${() => clubLimitsQuery.data.value ? memberLimitText() : ''}
+                </span>
+                <button class="btn btn-primary" @click=${() => this.router.navigate('/members/invite')} disabled=${() => !canAddMember()} title=${() => canAddMember() ? '' : 'Límite de miembros alcanzado'}>
                     <ion-icon name="person-add-outline"></ion-icon>
                     Invitar Miembro
                 </button>
@@ -65,8 +70,8 @@ export class MembersListPage extends NixComponent {
             <select class="input" @change=${(e: any) => this.roleFilter.update(() => e.target.value)}>
                 <option value="">Todos los roles</option>
                 <option value="admin">Admin</option>
-                <option value="lider">Líder</option>
-                <option value="piloto">Piloto</option>
+                <option value="leader">Líder</option>
+                <option value="rider">Piloto</option>
             </select>
             <div class="toolbar-spacer"></div>
             <span class="text-secondary">${() => this.filtered().length} miembros</span>
@@ -91,7 +96,7 @@ export class MembersListPage extends NixComponent {
                                         </div>
                                     </td>
                                     <td>${m.email}</td>
-                                    <td><span class="badge badge-${m.role}">${formatEnum(m.role)}</span></td>
+                                    <td><span class="badge badge-${m.role}">${ROLE_LABELS[m.role] || formatEnum(m.role)}</span></td>
                                     <td>${formatEnum(m.skillLevel || m.riderLevel || '')}</td>
                                     <td>${m.createdAt || m.joinedAt ? new Date(m.createdAt || m.joinedAt || '').toLocaleDateString('es-CO') : '-'}</td>
                                     <td>

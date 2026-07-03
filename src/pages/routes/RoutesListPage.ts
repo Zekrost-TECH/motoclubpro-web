@@ -5,6 +5,7 @@ import { api } from '../../services/api.service';
 import { openConfirm } from '../../components/ConfirmModal';
 import { SkeletonCard } from '../../components/Skeleton';
 import { formatEnum } from '../../utils/labels';
+import { hasFeature } from '../../stores/plans.store';
 import { createDebounced } from '../../utils/debounce';
 import type { Route } from '../../types';
 import { activeClub } from '../../stores/clubs.store';
@@ -34,6 +35,9 @@ export class RoutesListPage extends NixComponent {
 
     onMount() {
         setPageTitle('Rutas');
+        if (!hasFeature('route_library')) {
+            this.router.navigate('/dashboard');
+        }
     }
 
     filtered(): Route[] {
@@ -69,10 +73,11 @@ export class RoutesListPage extends NixComponent {
                 <p class="page-subtitle">Colección de caminos y recorridos del club</p>
             </div>
             <div class="page-header-actions">
+                ${() => hasFeature('route_library') ? html`
                 <button class="btn btn-primary" @click=${() => this.router.navigate('/routes/create')}>
                     <ion-icon name="add-outline"></ion-icon>
                     Nueva Ruta
-                </button>
+                </button>` : ''}
             </div>
         </div>
         <div class="toolbar">

@@ -8,6 +8,7 @@ import { formatEnum } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
+import { clubLimitsQuery, refreshClubLimits, canCreateEvent, eventLimitText } from '../../stores/plans.store';
 
 export class EventsListPage extends NixComponent {
     statusFilter = signal('');
@@ -34,6 +35,7 @@ export class EventsListPage extends NixComponent {
 
     onMount() {
         setPageTitle('Rodadas');
+        refreshClubLimits();
     }
 
     filteredEvents() {
@@ -69,7 +71,10 @@ export class EventsListPage extends NixComponent {
                 <p class="page-subtitle">Planifica y gestiona las salidas del club</p>
             </div>
             <div class="page-header-actions">
-                <button class="btn btn-primary" @click=${() => this.router.navigate('/events/create')}>
+                <span class="badge badge-secondary" style="margin-right:var(--mc-space-3);">
+                    ${() => clubLimitsQuery.data.value ? eventLimitText() : ''}
+                </span>
+                <button class="btn btn-primary" @click=${() => this.router.navigate('/events/create')} disabled=${() => !canCreateEvent()} title=${() => canCreateEvent() ? '' : 'Límite de eventos mensuales alcanzado'}>
                     <ion-icon name="add-outline"></ion-icon>
                     Nueva Rodada
                 </button>

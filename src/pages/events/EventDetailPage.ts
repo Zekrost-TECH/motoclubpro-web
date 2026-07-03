@@ -2,11 +2,12 @@ import { router } from '../../router';
 import { html, NixComponent, createForm, repeat } from '@deijose/nix-js';
 import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
-import type { Event as EventModel, EventAttendee, ChecklistItem, InventoryItem, RideRole, Route } from '../../types';
+import type { Event as EventModel, EventAttendee, ChecklistItem, InventoryItem, RideRole, Route, ClubRideRole } from '../../types';
 import { showToast } from '../../components/Toast';
 import { setPageTitle } from '../../stores/router.store';
 import { openConfirm } from '../../components/ConfirmModal';
-import { formatEnum } from '../../utils/labels';
+import { formatEnum, buildRideRoleLabels } from '../../utils/labels';
+import { hasFeature } from '../../stores/plans.store';
 
 export class EventDetailPage extends NixComponent {
     private router = router;
@@ -74,6 +75,11 @@ export class EventDetailPage extends NixComponent {
     routesQuery = createQuery(
         'routes/list',
         () => api.routes.list(),
+        { staleTime: 60_000 }
+    );
+    rideRolesQuery = createQuery(
+        'ride-roles/list',
+        () => api.rideRoles.list(),
         { staleTime: 60_000 }
     );
     addInventory = createCommand(
@@ -218,7 +224,10 @@ export class EventDetailPage extends NixComponent {
     }
 
     confirmSetRole(userId: string, userName: string, newRole: RideRole) {
-        openConfirm('Cambiar rol', `¿Asignar el rol "${formatEnum(newRole)}" a ${userName}?`, () => {
+        const roles = this.rideRolesQuery.data.value ?? [];
+        const labels = buildRideRoleLabels(roles);
+        const roleLabel = labels[newRole] || formatEnum(newRole);
+        openConfirm('Cambiar rol', `¿Asignar el rol "${roleLabel}" a ${userName}?`, () => {
             this.setRole.execute({ eventId: this.eventId, userId, role: newRole });
         });
     }
@@ -310,12 +319,12 @@ export class EventDetailPage extends NixComponent {
                                                     <td>${a.userName}</td>
                                                     <td>
                                                         <select class="input" value=${() => a.rideRole} @change=${(e: Event) => this.confirmSetRole(a.userId, a.userName, (e.target as HTMLSelectElement).value as RideRole)} style="height:32px;min-width:160px;padding:0 var(--mc-space-3);">
-                                                            <option value="rider">Rider</option>
-                                                            <option value="puntero">Puntero</option>
-                                                            <option value="barredora">Barredora</option>
-                                                            <option value="capitan_ruta">Capitán de Ruta</option>
-                                                            <option value="medic">Médico</option>
-                                                            <option value="cierre_seguridad">Cierre de Seguridad</option>
+                                                            ${() => {
+                                const roles = this.rideRolesQuery.data.value ?? [];
+                                return roles.length
+                                    ? roles.map((r: ClubRideRole) => html`<option value="${r.slug}">${r.name}</option>`)
+                                    : html`<option value="${a.rideRole}">${a.rideRole}</option>`;
+                            }}
                                                         </select>
                                                     </td>
                                                     <td><ion-icon name=${a.confirmed ? 'checkmark-circle' : 'time-outline'} style=${a.confirmed ? 'color:var(--mc-success-500)' : 'color:var(--mc-text-muted)'}></ion-icon></td>
@@ -329,6 +338,7 @@ export class EventDetailPage extends NixComponent {
                         </div>
                     </div>
                 </div>
+                ${() => hasFeature('checklist') ? html`
                 <div class="dashboard-card" style="margin-top:var(--mc-space-6);">
                     <div class="card-header"><h3><ion-icon name="checkbox-outline"></ion-icon> Checklist de Equipamiento</h3></div>
                     <div class="card-body">
@@ -353,9 +363,9 @@ export class EventDetailPage extends NixComponent {
                                 <thead><tr><th>Item</th><th>Obligatorio</th><th></th></tr></thead>
                                 <tbody>
                                     ${() => {
-                        const list = this.checklist;
-                        if (!list.length) return html`<tr><td colspan="3" class="empty">Sin items de checklist.</td></tr>`;
-                        return repeat(list, (item: ChecklistItem) => item.id, (item: ChecklistItem) => html`
+                            const list = this.checklist;
+                            if (!list.length) return html`<tr><td colspan="3" class="empty">Sin items de checklist.</td></tr>`;
+                            return repeat(list, (item: ChecklistItem) => item.id, (item: ChecklistItem) => html`
                                             <tr>
                                                 <td><strong>${item.label}</strong></td>
                                                 <td><span class=${`badge ${item.required ? 'badge-danger' : 'badge'}`}>${item.required ? 'Obligatorio' : 'Opcional'}</span></td>
@@ -366,12 +376,13 @@ export class EventDetailPage extends NixComponent {
                                                 </td>
                                             </tr>
                                         `);
-                    }}
+                        }}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
+                </div>` : ''}
+                ${() => hasFeature('event_inventory') ? html`
                 <div class="dashboard-card" style="margin-top:var(--mc-space-6);">
                     <div class="card-header"><h3><ion-icon name="cube-outline"></ion-icon> Inventario Compartido</h3></div>
                     <div class="card-body">
@@ -402,9 +413,9 @@ export class EventDetailPage extends NixComponent {
                                 <thead><tr><th>Item</th><th>Categoría</th><th>Cantidad</th><th></th></tr></thead>
                                 <tbody>
                                     ${() => {
-                        const list = this.inventory;
-                        if (!list.length) return html`<tr><td colspan="4" class="empty">Sin inventario registrado.</td></tr>`;
-                        return repeat(list, (item: InventoryItem) => item.id, (item: InventoryItem) => html`
+                            const list = this.inventory;
+                            if (!list.length) return html`<tr><td colspan="4" class="empty">Sin inventario registrado.</td></tr>`;
+                            return repeat(list, (item: InventoryItem) => item.id, (item: InventoryItem) => html`
                                             <tr>
                                                 <td><strong>${item.name}</strong></td>
                                                 <td><span class="badge">${formatEnum(item.category || '')}</span></td>
@@ -416,12 +427,12 @@ export class EventDetailPage extends NixComponent {
                                                 </td>
                                             </tr>
                                         `);
-                    }}
+                        }}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
+                </div>` : ''}
             `;
             }}
     `;

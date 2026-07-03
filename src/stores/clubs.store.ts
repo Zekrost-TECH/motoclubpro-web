@@ -42,6 +42,7 @@ function mapClub(c: any): Club {
         description: c.description,
         logo: c.logo_url || c.logo,
         role: c.role,
+        features: c.features || {},
         createdAt: c.created_at || c.createdAt,
     };
 }

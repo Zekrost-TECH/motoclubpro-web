@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle, SosAlert } from '../types';
+import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle, SosAlert, ClubRideRole, ClubLimits } from '../types';
 import { router } from '../router';
 
 const BASE_URL = (import.meta as any).env.VITE_WEB_API_URL || 'http://localhost:3000/api/v1';
@@ -45,6 +45,31 @@ function request<T>(path: string, options: RequestInit = {}): Promise<T> {
             return body.data as T;
         }
         return body as T;
+    });
+}
+
+function requestRaw<T>(path: string, options: RequestInit = {}): Promise<T> {
+    const url = `${BASE_URL}${path}`;
+    const headers: Record<string, string> = {
+        ...(options.headers as Record<string, string> || {}),
+    };
+    if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+    }
+    if (_accessToken) {
+        headers['Authorization'] = `Bearer ${_accessToken}`;
+    }
+    if (_activeClubId) {
+        headers['X-Club-ID'] = _activeClubId;
+    }
+    return fetch(url, { ...options, headers }).then(async (r) => {
+        if (!r.ok) {
+            handleAuthError(r.status);
+            const err = await r.json().catch(() => ({}));
+            throw new Error(err.message || `HTTP ${r.status}`);
+        }
+        if (r.status === 204) return undefined as T;
+        return await r.json() as T;
     });
 }
 
@@ -139,7 +164,7 @@ function mapUser(data: any): User {
         name: data.name || '',
         nickname: data.nickname,
         phone: data.phone,
-        role: data.role || 'piloto',
+        role: data.role || 'rider',
         avatar: data.avatar_url || data.avatar,
         bloodType: data.bloodType || data.blood_type,
         allergies: data.allergies,
@@ -171,7 +196,7 @@ function mapMember(data: any): Member {
         id: data.id,
         userId: data.user_id ?? data.userId ?? '',
         clubId: data.club_id ?? data.clubId ?? '',
-        role: data.role || 'piloto',
+        role: data.role || 'rider',
         name: data.name || '',
         email: data.email || '',
         avatar: data.avatar_url || data.avatar,
@@ -259,6 +284,53 @@ export const api = {
         updateBilling: (id: string, data: any) =>
             request<void>(`/clubs/${id}/billing`, { method: 'PATCH', body: JSON.stringify(data) }),
     },
+    rideRoles: {
+        list: () => request<any[]>('/ride-roles').then((list) =>
+            (list || []).map((r) => ({
+                id: r.id,
+                clubId: r.club_id ?? r.clubId,
+                slug: r.slug,
+                name: r.name,
+                isUnique: r.is_unique ?? r.isUnique,
+                sortOrder: r.sort_order ?? r.sortOrder,
+            }))
+        ),
+        create: (data: Partial<ClubRideRole>) =>
+            request<any>('/ride-roles', {
+                method: 'POST',
+                body: JSON.stringify({
+                    slug: data.slug,
+                    name: data.name,
+                    is_unique: data.isUnique,
+                    sort_order: data.sortOrder,
+                }),
+            }).then((r) => ({
+                id: r.id,
+                clubId: r.club_id ?? r.clubId,
+                slug: r.slug,
+                name: r.name,
+                isUnique: r.is_unique ?? r.isUnique,
+                sortOrder: r.sort_order ?? r.sortOrder,
+            })),
+        update: (id: string, data: Partial<ClubRideRole>) =>
+            request<any>(`/ride-roles/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    slug: data.slug,
+                    name: data.name,
+                    is_unique: data.isUnique,
+                    sort_order: data.sortOrder,
+                }),
+            }).then((r) => ({
+                id: r.id,
+                clubId: r.club_id ?? r.clubId,
+                slug: r.slug,
+                name: r.name,
+                isUnique: r.is_unique ?? r.isUnique,
+                sortOrder: r.sort_order ?? r.sortOrder,
+            })),
+        delete: (id: string) => request<void>(`/ride-roles/${id}`, { method: 'DELETE' }),
+    },
     events: {
         list: (status?: string) =>
             request<Event[]>(`/events${status ? `?status=${status}` : ''}`).then((list) => (list || []).map(mapEvent)),
@@ -329,12 +401,31 @@ export const api = {
     },
     sos: {
         list: () => request<SosAlert[]>('/sos'),
+        listPaginated: (page?: number, limit?: number) => {
+            const params = new URLSearchParams();
+            if (page) params.set('page', String(page));
+            if (limit) params.set('limit', String(limit));
+            const query = params.toString();
+            return requestRaw<{ data: SosAlert[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(`/sos${query ? '?' + query : ''}`);
+        },
         active: () => request<SosAlert[]>('/sos/active'),
         resolve: (id: string) => request<SosAlert>(`/sos/${id}/resolve`, { method: 'PATCH' }),
     },
     billing: {
         subscription: () => request<Subscription>('/billing/subscription'),
         payments: () => request<Payment[]>('/billing/payments'),
+    },
+    plans: {
+        limits: () => request<any>('/plans/limits').then((data) => ({
+            planId: data.plan_id ?? data.planId,
+            planName: data.plan_name ?? data.planName,
+            maxMembers: data.max_members ?? data.maxMembers,
+            maxEventsMonth: data.max_events_month ?? data.maxEventsMonth,
+            currentMembers: data.current_members ?? data.currentMembers,
+            currentEventsMonth: data.current_events_month ?? data.currentEventsMonth,
+            overageMemberCents: data.overage_member_cents ?? data.overageMemberCents,
+            features: data.features ?? {},
+        } as ClubLimits)),
     },
     reports: {
         events: (from: string, to: string) => request<any>(`/reports/events?from=${from}&to=${to}`),

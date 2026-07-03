@@ -22,6 +22,8 @@ import { SosPage } from './pages/sos/SosPage';
 import { BillingPage } from './pages/billing/BillingPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
+import { RideRolesPage } from './pages/settings/RideRolesPage';
+import { AdminClubsPage } from './pages/admin/AdminClubsPage';
 
 export const router = createRouter([
     {
@@ -48,6 +50,8 @@ export const router = createRouter([
             { path: '/billing', component: () => new BillingPage() },
             { path: '/reports', component: () => new ReportsPage() },
             { path: '/settings', component: () => new SettingsPage() },
+            { path: '/ride-roles', component: () => new RideRolesPage() },
+            { path: '/admin/clubs', component: () => new AdminClubsPage() },
         ],
     },
     { path: '/login', component: () => new LoginPage() },
@@ -60,6 +64,7 @@ router.beforeEach((to) => {
     const user = authStore.currentUser.value;
     if (to === '/login' && user) return '/';
     if (to !== '/login' && to !== '/select-club' && !user) return '/login';
+    if (to.startsWith('/admin') && user?.role !== 'superadmin') return '/';
     return undefined;
 });
 
@@ -77,7 +82,7 @@ export function requireAdmin(): boolean {
         router.navigate('/login');
         return false;
     }
-    if (user.role !== 'admin' && user.role !== 'lider') {
+    if (user.role !== 'superadmin' && user.role !== 'admin' && user.role !== 'leader') {
         router.navigate('/');
         return false;
     }

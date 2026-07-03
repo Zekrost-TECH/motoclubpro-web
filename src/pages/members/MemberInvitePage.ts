@@ -8,13 +8,12 @@ import { showToast } from '../../components/Toast';
 
 export class MemberInvitePage extends NixComponent {
     email = signal('');
-    role = signal('piloto');
     private router = router;
 
     inviteMember = createCommand(
         'members/invite',
-        async (payload: { clubId: string; email: string; role: string }) =>
-            api.clubs.inviteMember(payload.clubId, payload.email, payload.role),
+        async (payload: { clubId: string; email: string }) =>
+            api.clubs.inviteMember(payload.clubId, payload.email, 'rider'),
         {
             mode: 'latest',
             onSuccess: () => invalidateQueries('members/list'),
@@ -31,7 +30,6 @@ export class MemberInvitePage extends NixComponent {
             await this.inviteMember.executeAsync({
                 clubId: activeClub.value.id,
                 email: this.email.value,
-                role: this.role.value,
             });
             showToast('Invitación enviada', 'success');
             this.router.navigate('/members');
@@ -54,14 +52,6 @@ export class MemberInvitePage extends NixComponent {
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" value=${() => this.email.value} @input=${(e: any) => this.email.update(() => e.target.value)} placeholder="piloto@email.com" required />
-                </div>
-                <div class="form-group">
-                    <label>Rol</label>
-                    <select value=${() => this.role.value} @change=${(e: any) => this.role.update(() => e.target.value)}>
-                        <option value="piloto">Piloto</option>
-                        <option value="lider">Líder</option>
-                        <option value="admin">Admin</option>
-                    </select>
                 </div>
             </div>
             <div class="form-actions">

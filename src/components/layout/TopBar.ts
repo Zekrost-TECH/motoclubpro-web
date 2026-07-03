@@ -39,7 +39,7 @@ export function TopBar(): NixTemplate {
                     <div class="user-avatar">${getInitials(user?.name || user?.email)}</div>
                     <div>
                         <span class="user-name">${user?.name || user?.email}</span>
-                        <span class="user-role">${user?.role || 'piloto'}</span>
+                        <span class="user-role">${user?.role || 'rider'}</span>
                     </div>
                 </div>
             </div>

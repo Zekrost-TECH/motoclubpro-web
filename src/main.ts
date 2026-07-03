@@ -3,6 +3,7 @@ import { router } from './router';
 import { refreshSession } from './stores/auth.store';
 import { loadClubs } from './stores/clubs.store';
 import { applyTheme } from './stores/theme.store';
+import { refreshClubLimits } from './stores/plans.store';
 
 // ── App shell ────────────────────────────────────────────────────────────
 function App() {
@@ -19,6 +20,7 @@ async function init() {
     effect(() => applyTheme());
     const ok = await refreshSession();
     if (ok) await loadClubs();
+    refreshClubLimits();
     mount(App(), '#app', { router });
 }
 
