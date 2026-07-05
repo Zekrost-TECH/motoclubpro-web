@@ -52,6 +52,8 @@ export interface Event {
     date: string;
     time: string;
     meetingPoint: string;
+    meetingPointLat?: number;
+    meetingPointLng?: number;
     difficulty: 'suave' | 'off_road' | 'viaje_largo' | 'expertos';
     status: 'borrador' | 'proximo' | 'en_curso' | 'completado' | 'cancelado';
     routeId?: string;
@@ -108,6 +110,9 @@ export interface Route {
     waypoints: Waypoint[];
     waypointsCount?: number;
     waypoints_count?: number;
+    startLat?: number;
+    startLng?: number;
+    startName?: string;
     createdAt: string;
 }
 

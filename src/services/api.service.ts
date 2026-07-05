@@ -135,9 +135,38 @@ function mapEventInput(data: Partial<Event>): any {
         payload.meeting_point = data.meetingPoint;
         delete payload.meetingPoint;
     }
+    if (data.meetingPointLat !== undefined) {
+        payload.meeting_point_lat = data.meetingPointLat;
+        delete payload.meetingPointLat;
+    }
+    if (data.meetingPointLng !== undefined) {
+        payload.meeting_point_lng = data.meetingPointLng;
+        delete payload.meetingPointLng;
+    }
     if (data.routeId !== undefined) {
         payload.route_id = data.routeId;
         delete payload.routeId;
+    }
+    return payload;
+}
+
+function mapRouteInput(data: Partial<Route>): any {
+    const payload: any = { ...data };
+    if (data.distance !== undefined) {
+        payload.distanceKm = data.distance;
+        delete payload.distance;
+    }
+    if (data.startLat !== undefined) {
+        payload.start_lat = data.startLat;
+        delete payload.startLat;
+    }
+    if (data.startLng !== undefined) {
+        payload.start_lng = data.startLng;
+        delete payload.startLng;
+    }
+    if (data.startName !== undefined) {
+        payload.start_name = data.startName;
+        delete payload.startName;
     }
     return payload;
 }
@@ -362,9 +391,10 @@ export const api = {
     routes: {
         list: () => request<Route[]>('/routes'),
         get: (id: string) => request<Route>(`/routes/${id}`),
-        create: (data: Partial<Route>) => request<Route>('/routes', { method: 'POST', body: JSON.stringify(data) }),
+        create: (data: Partial<Route>) =>
+            request<Route>('/routes', { method: 'POST', body: JSON.stringify(mapRouteInput(data)) }),
         update: (id: string, data: Partial<Route>) =>
-            request<Route>(`/routes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+            request<Route>(`/routes/${id}`, { method: 'PATCH', body: JSON.stringify(mapRouteInput(data)) }),
         delete: (id: string) => request<void>(`/routes/${id}`, { method: 'DELETE' }),
         waypoints: (id: string) =>
             request<any[]>(`/routes/${id}/waypoints`).then((list) => (list || []).map(mapWaypoint)),

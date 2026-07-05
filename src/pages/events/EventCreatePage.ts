@@ -3,6 +3,7 @@ import { html, signal, NixComponent } from '@deijose/nix-js';
 import { createCommand, createQuery, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
+import { MapPicker } from '../../components/MapPicker';
 import type { Event } from '../../types';
 import { setPageTitle } from '../../stores/router.store';
 
@@ -12,6 +13,8 @@ export class EventCreatePage extends NixComponent {
     date = signal('');
     time = signal('');
     meetingPoint = signal('');
+    meetingPointLat = signal<number | null>(null);
+    meetingPointLng = signal<number | null>(null);
     difficulty = signal('suave');
     routeId = signal('');
     private router = router;
@@ -43,6 +46,8 @@ export class EventCreatePage extends NixComponent {
                 date: this.date.value,
                 time: this.time.value,
                 meetingPoint: this.meetingPoint.value,
+                meetingPointLat: this.meetingPointLat.value ?? undefined,
+                meetingPointLng: this.meetingPointLng.value ?? undefined,
                 difficulty: this.difficulty.value as any,
                 routeId: this.routeId.value || undefined,
             });
@@ -93,10 +98,14 @@ export class EventCreatePage extends NixComponent {
                     </select>
                 </div>
             </div>
-            <div class="form-group">
-                <label>Punto de Encuentro</label>
-                <input type="text" value=${() => this.meetingPoint.value} @input=${(e: any) => this.meetingPoint.update(() => e.target.value)} placeholder="Parqueadero CC Caribe Plaza" required />
-            </div>
+            ${new MapPicker({
+            label: 'Punto de Encuentro',
+            onChange: (location) => {
+                this.meetingPoint.update(() => location.name);
+                this.meetingPointLat.update(() => location.lat);
+                this.meetingPointLng.update(() => location.lng);
+            },
+        })}
             <div class="form-group">
                 <label>Descripción</label>
                 <textarea rows="4" value=${() => this.description.value} @input=${(e: any) => this.description.update(() => e.target.value)} placeholder="Detalles importantes de la rodada..."></textarea>
