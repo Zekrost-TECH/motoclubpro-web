@@ -1343,13 +1343,16 @@ select.input {
     transform: translateX(0);
   }
 
-  .sidebar.open::before {
-    content: '';
+  .mobile-menu-overlay {
+    display: none;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: -1;
-    pointer-events: none;
+    z-index: 199;
+  }
+
+  .mobile-menu-overlay.open {
+    display: block;
   }
 
   .main-content {
