@@ -40,8 +40,8 @@ export function Sidebar(): NixTemplate {
     return html`
         <aside class=${() => `sidebar ${mobileMenuOpen.value ? 'open' : ''}`}>
             <div class="sidebar-header">
-                <img src="/nix-js-logo.png" alt="MotoClub Pro" class="sidebar-logo" />
-                <h2>MotoClub Pro</h2>
+                <img src="/nix-js-logo.png" alt="BikerOS" class="sidebar-logo" />
+                <h2>BikerOS</h2>
                 ${() => activeClub.value
             ? html`<span class="sidebar-club">${activeClub.value.name}</span>`
             : ''}

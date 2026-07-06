@@ -54,8 +54,8 @@ export class LoginPage extends NixComponent {
         <div class="auth-page">
             <div class="auth-card">
                 <div class="auth-header">
-                    <img src="/nix-js-logo.png" alt="MotoClub Pro" class="auth-logo" />
-                    <h1>MotoClub Pro</h1>
+                    <img src="/nix-js-logo.png" alt="BikerOS" class="auth-logo" />
+                    <h1>BikerOS</h1>
                     <p>Plataforma de Administración</p>
                 </div>
                 <form @submit.prevent=${this.form.handleSubmit((values) => this.handleSubmit(values))}>

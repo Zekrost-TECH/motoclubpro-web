@@ -20,7 +20,7 @@ export class ClubSelectorPage extends NixComponent {
         <div class="auth-page">
             <div class="auth-card">
                 <div class="auth-header">
-                    <img src="/nix-js-logo.png" alt="MotoClub Pro" class="auth-logo" />
+                    <img src="/nix-js-logo.png" alt="BikerOS" class="auth-logo" />
                     <h1>Selecciona tu Club</h1>
                     <p>Elige el club que quieres administrar</p>
                 </div>

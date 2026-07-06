@@ -1,8 +1,8 @@
-# MotoClub Pro — Web UI Design System Prompt
+# BikerOS — Web UI Design System Prompt
 
 ## Objective
 
-Redesign the entire **MotoClub Pro** administrative web application to look like a **modern, biker-themed, attractive yet minimalist SaaS admin dashboard**. The system is used by motorcycle club administrators to manage events, routes, members, SOS alerts, billing, reports, and club settings. The visual language must communicate power, trust, community, and speed while remaining highly readable and functional.
+Redesign the entire **BikerOS** administrative web application to look like a **modern, biker-themed, attractive yet minimalist SaaS admin dashboard**. The system is used by motorcycle club administrators to manage events, routes, members, SOS alerts, billing, reports, and club settings. The visual language must communicate power, trust, community, and speed while remaining highly readable and functional.
 
 This prompt should produce a complete CSS-based design system plus a refreshed layout and components. The app currently uses plain CSS custom properties and vanilla Web Components with `@deijose/nix-js`. Keep the architecture intact: do not introduce React, Tailwind, or other frameworks. Only use CSS custom properties, class naming, and component updates.
 
@@ -10,7 +10,7 @@ This prompt should produce a complete CSS-based design system plus a refreshed l
 
 ## 1. Brand Identity & Atmosphere
 
-**Brand name:** MotoClub Pro
+**Brand name:** BikerOS
 **Industry:** Motorcycle clubs / Biker community management
 **Vibe:** Rugged, modern, clean, premium but not corporate, dark-mode-first with a bold orange accent.
 

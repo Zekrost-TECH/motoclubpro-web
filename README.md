@@ -1,6 +1,6 @@
-# MotoClub Pro Web Admin
+# BikerOS Web Admin
 
-Panel de administracion web para MotoClub Pro. Permite a administradores y lideres gestionar clubes, rodadas, rutas, miembros, puntos de apoyo, suscripciones y alertas SOS desde el navegador.
+Panel de administracion web para BikerOS. Permite a administradores y lideres gestionar clubes, rodadas, rutas, miembros, puntos de apoyo, suscripciones y alertas SOS desde el navegador.
 
 ## Stack Tecnologico
 
@@ -91,12 +91,12 @@ src/
 ## Requisitos
 
 - Bun 1.3+ (o Node.js 20+)
-- Backend API corriendo (ver `motoclubpro-api/`)
+- Backend API corriendo (ver `biker-os-api/`)
 
 ## Instalacion
 
 ```bash
-cd motoclubpro-web
+cd biker-os-web
 
 # Dependencias
 bun install
