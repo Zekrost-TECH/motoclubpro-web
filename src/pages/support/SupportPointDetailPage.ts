@@ -4,6 +4,7 @@ import { html, signal, NixComponent, createForm, required, watch } from '@deijos
 import { createQuery, createCommand, invalidateQueries, updateQueryData } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
+import { MapPicker } from '../../components/MapPicker';
 import { formatEnum } from '../../utils/labels';
 import { routerPath } from '../../stores/router.store';
 import type { SupportPoint } from '../../types';
@@ -20,6 +21,23 @@ const supportTypes = [
 export class SupportPointDetailPage extends NixComponent {
     private router = router;
     private _unwatch!: () => void;
+    private _pointLat = signal<number | null>(null);
+    private _pointLng = signal<number | null>(null);
+    _mapPicker = new MapPicker({
+        label: 'Ubicación en el mapa',
+        onChange: (location) => {
+            this._pointLat.update(() => location.lat);
+            this._pointLng.update(() => location.lng);
+            this.form.fields.lat.value.update(() => String(location.lat));
+            this.form.fields.lat.onInput({ target: { value: String(location.lat) } } as any);
+            this.form.fields.lng.value.update(() => String(location.lng));
+            this.form.fields.lng.onInput({ target: { value: String(location.lng) } } as any);
+            if (!this.form.fields.address.value.value && location.name) {
+                this.form.fields.address.value.update(() => location.name);
+                this.form.fields.address.onInput({ target: { value: location.name } } as any);
+            }
+        },
+    });
 
     isEditing = signal(false);
     isCreate = signal(false);
@@ -113,6 +131,9 @@ export class SupportPointDetailPage extends NixComponent {
                     lat: point.lat != null ? String(point.lat) : '',
                     lng: point.lng != null ? String(point.lng) : '',
                 });
+                this._pointLat.update(() => point.lat ?? null);
+                this._pointLng.update(() => point.lng ?? null);
+                this._mapPicker.setLocation(point.lat, point.lng, point.address);
             },
             { immediate: true }
         );
@@ -252,6 +273,7 @@ export class SupportPointDetailPage extends NixComponent {
                     ${() => this.form.fields.lng.error.value ? html`<span class="err">${this.form.fields.lng.error.value}</span>` : null}
                 </div>
             </div>
+            ${this._mapPicker}
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary" disabled=${() => this.saveCommand.isPending.value || this.form.isSubmitting.value}>
                     ${() => this.saveCommand.isPending.value || this.form.isSubmitting.value ? 'Guardando...' : 'Guardar'}

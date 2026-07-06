@@ -142,6 +142,17 @@ export class MapPicker extends NixComponent {
         this._emitChange();
     }
 
+    setLocation(lat: number, lng: number, name?: string) {
+        const maps = (window as any).google?.maps;
+        if (!maps || !this._map) return;
+        this._setMarker({ lat, lng }, maps);
+        this._updateLatLng(lat, lng);
+        if (name != null) {
+            this.name.update(() => name);
+            this._emitChange();
+        }
+    }
+
     render() {
         return html`
             <div class="form-group">
