@@ -6,6 +6,7 @@ import { setPageTitle } from '../../stores/router.store';
 import { showToast } from '../../components/Toast';
 import { SkeletonCard } from '../../components/Skeleton';
 import { themeStore } from '../../stores/theme.store';
+import { PRIVACY_POLICY_URL } from '../../config/urls';
 
 export class SettingsPage extends NixComponent {
     form = createForm(
@@ -91,6 +92,15 @@ export class SettingsPage extends NixComponent {
                         <span>Claro</span>
                     </button>
                 </div>
+            </div>
+        </div>
+        <div class="form-card">
+            <h3 class="form-section-title"><ion-icon name="shield-checkmark-outline"></ion-icon> Legal</h3>
+            <div class="form-group">
+                <a href=${PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" class="link-btn">
+                    <ion-icon name="open-outline"></ion-icon>
+                    <span>Política de privacidad</span>
+                </a>
             </div>
         </div>
         ${() => this.clubQuery.status.value === 'pending'

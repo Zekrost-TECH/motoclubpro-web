@@ -3,6 +3,7 @@ import { setPageTitle } from '../../stores/router.store';
 import { html, NixComponent, signal, createForm, required, email as emailValidator } from '@deijose/nix-js';
 import { login, authStore, logout } from '../../stores/auth.store';
 import { loadClubs, clubsStore } from '../../stores/clubs.store';
+import { PRIVACY_POLICY_URL } from '../../config/urls';
 
 export class LoginPage extends NixComponent {
     private router = router;
@@ -24,6 +25,9 @@ export class LoginPage extends NixComponent {
 
     async handleSubmit(values: { email: string; password: string }) {
         const ok = await login(values.email, values.password);
+        console.log({
+            ok
+        });
         if (ok) {
             await loadClubs();
             const clubs = clubsStore.myClubs.value || [];
@@ -80,6 +84,10 @@ export class LoginPage extends NixComponent {
                         ${() => authStore.isLoading.value || this.form.isSubmitting.value ? 'Ingresando...' : 'Ingresar'}
                     </button>
                 </form>
+                <p class="auth-footer">
+                    Al ingresar, aceptas nuestra
+                    <a href=${PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer">Política de privacidad</a>
+                </p>
             </div>
         </div>
     `;
