@@ -130,7 +130,7 @@ export class LoginPage extends NixComponent {
                     </button>
                 </form>
                 ${() => isTurnstileEnabled() ? html`
-                    <div class="form-group turnstile-wrapper">
+                    <div class="form-group turnstile-wrapper" style="margin-top: 0.75rem;">
                         <div ref=${this.turnstileContainer} class="cf-turnstile"></div>
                         ${() => this.turnstileError.value ? html`<p class="form-error">${this.turnstileError.value}</p>` : ''}
                     </div>
