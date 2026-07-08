@@ -8,11 +8,11 @@ export const authStore = createStore({
     error: null as string | null,
 });
 
-export async function login(email: string, password: string): Promise<boolean> {
+export async function login(email: string, password: string, turnstileToken?: string): Promise<boolean> {
     authStore.isLoading.update(() => true);
     authStore.error.update(() => null);
     try {
-        const res = await api.auth.login(email, password);
+        const res = await api.auth.login(email, password, turnstileToken);
         setTokens(res.access_token, res.refresh_token);
         authStore.currentUser.update(() => res.user);
         return true;

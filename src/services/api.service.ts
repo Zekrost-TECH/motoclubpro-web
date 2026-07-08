@@ -267,10 +267,10 @@ function mapInventoryItem(data: any): InventoryItem {
 
 export const api = {
     auth: {
-        login: (email: string, password: string) =>
+        login: (email: string, password: string, turnstileToken?: string) =>
             request<{ access_token: string; refresh_token: string; user: User }>('/auth/login', {
                 method: 'POST',
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, ...(turnstileToken ? { turnstileToken } : {}) }),
             }),
         me: () => request<User>('/auth/me'),
         refresh: () => {

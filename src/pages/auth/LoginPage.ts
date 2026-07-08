@@ -1,9 +1,15 @@
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
-import { html, NixComponent, signal, createForm, required, email as emailValidator } from '@deijose/nix-js';
+import { html, NixComponent, signal, createForm, required, email as emailValidator, ref } from '@deijose/nix-js';
 import { login, authStore, logout } from '../../stores/auth.store';
 import { loadClubs, clubsStore } from '../../stores/clubs.store';
 import { PRIVACY_POLICY_URL } from '../../config/urls';
+import {
+    isTurnstileEnabled,
+    renderTurnstile,
+    getTurnstileToken,
+    resetTurnstile,
+} from '../../services/turnstile.service';
 
 export class LoginPage extends NixComponent {
     private router = router;
@@ -18,16 +24,55 @@ export class LoginPage extends NixComponent {
         }
     );
     showPassword = signal(false);
+    turnstileWidgetId = signal<string | null>(null);
+    turnstileContainer = ref<HTMLDivElement>();
+    turnstileError = signal<string | null>(null);
+    turnstileReady = signal(!isTurnstileEnabled());
 
     onMount() {
         setPageTitle('Ingresar');
+        if (!isTurnstileEnabled() || !this.turnstileContainer.el) return;
+
+        // El script de Turnstile puede tardar en cargar; reintentamos un par de veces.
+        let attempts = 0;
+        const tryRender = () => {
+            const id = renderTurnstile(this.turnstileContainer.el!, {
+                onToken: () => {
+                    this.turnstileError.update(() => null);
+                    this.turnstileReady.update(() => true);
+                },
+                onError: () => {
+                    this.turnstileError.update(() => 'Error de verificacion de seguridad. Recarga la pagina.');
+                    this.turnstileReady.update(() => false);
+                },
+                theme: 'auto',
+                size: 'normal',
+            });
+            if (id) {
+                this.turnstileWidgetId.update(() => id);
+            } else if (attempts < 10) {
+                attempts++;
+                setTimeout(tryRender, 300);
+            } else {
+                this.turnstileError.update(() => 'No se pudo cargar la verificacion de seguridad. Recarga la pagina.');
+            }
+        };
+        tryRender();
     }
 
     async handleSubmit(values: { email: string; password: string }) {
-        const ok = await login(values.email, values.password);
-        console.log({
-            ok
-        });
+        const turnstileToken = isTurnstileEnabled() ? getTurnstileToken() : undefined;
+        if (isTurnstileEnabled() && !turnstileToken) {
+            this.turnstileError.update(() => 'Completa la verificacion de seguridad antes de continuar.');
+            return;
+        }
+
+        const ok = await login(values.email, values.password, turnstileToken);
+        if (!ok) {
+            resetTurnstile(this.turnstileWidgetId.value ?? undefined);
+            this.turnstileReady.update(() => !isTurnstileEnabled());
+        }
+
         if (ok) {
             await loadClubs();
             const clubs = clubsStore.myClubs.value || [];
@@ -79,11 +124,17 @@ export class LoginPage extends NixComponent {
                         ${() => this.form.fields.password.error.value ? html`<p class="form-error">${this.form.fields.password.error.value}</p>` : ''}
                     </div>
                     ${() => authStore.error.value ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> ${authStore.error.value}</div>` : ''}
-                    <button type="submit" class="btn btn-primary btn-block" disabled=${() => authStore.isLoading.value || this.form.isSubmitting.value}>
+                    <button type="submit" class="btn btn-primary btn-block" disabled=${() => authStore.isLoading.value || this.form.isSubmitting.value || !this.turnstileReady.value}>
                         <ion-icon name="log-in-outline"></ion-icon>
                         ${() => authStore.isLoading.value || this.form.isSubmitting.value ? 'Ingresando...' : 'Ingresar'}
                     </button>
                 </form>
+                ${() => isTurnstileEnabled() ? html`
+                    <div class="form-group turnstile-wrapper">
+                        <div ref=${this.turnstileContainer} class="cf-turnstile"></div>
+                        ${() => this.turnstileError.value ? html`<p class="form-error">${this.turnstileError.value}</p>` : ''}
+                    </div>
+                ` : ''}
                 <p class="auth-footer">
                     Al ingresar, aceptas nuestra
                     <a href=${PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer">Política de privacidad</a>
