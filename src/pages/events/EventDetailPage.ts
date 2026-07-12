@@ -7,6 +7,7 @@ import { showToast } from '../../components/Toast';
 import { setPageTitle } from '../../stores/router.store';
 import { openConfirm } from '../../components/ConfirmModal';
 import { formatEnum, buildRideRoleLabels } from '../../utils/labels';
+import { formatLocalDate } from '../../utils/date';
 import { hasFeature } from '../../stores/plans.store';
 
 export class EventDetailPage extends NixComponent {
@@ -247,7 +248,7 @@ export class EventDetailPage extends NixComponent {
         <div class="page-header">
             <div class="page-header-left">
                 <h1 class="page-title">${() => this.event?.title || 'Detalle de Rodada'}</h1>
-                <p class="page-subtitle">${() => this.event ? `${new Date(this.event.date).toLocaleDateString('es-CO')} · ${this.event.meetingPoint}` : ''}</p>
+                <p class="page-subtitle">${() => this.event ? `${formatLocalDate(this.event.date)} · ${this.event.meetingPoint}` : ''}</p>
             </div>
             <div class="page-header-actions" style="display:flex;align-items:center;gap:var(--mc-space-3);">
                 <button class="btn btn-secondary" @click=${() => this.router.navigate('/events')}>
@@ -274,7 +275,7 @@ export class EventDetailPage extends NixComponent {
                         <div class="card-header"><h3><ion-icon name="information-circle-outline"></ion-icon> Información General</h3></div>
                         <div class="card-body">
                             <div class="stat-list">
-                                <div class="stat-item"><span>Fecha</span><strong>${new Date(e.date).toLocaleDateString('es-CO')}</strong></div>
+                                <div class="stat-item"><span>Fecha</span><strong>${formatLocalDate(e.date)}</strong></div>
                                 <div class="stat-item"><span>Hora</span><strong>${e.time}</strong></div>
                                 <div class="stat-item"><span>Punto de Encuentro</span><strong>${e.meetingPoint}</strong></div>
                                 <div class="stat-item"><span>Dificultad</span><strong><span class=${`badge ${this.difficultyBadge(e.difficulty)}`}>${formatEnum(e.difficulty)}</span></strong></div>

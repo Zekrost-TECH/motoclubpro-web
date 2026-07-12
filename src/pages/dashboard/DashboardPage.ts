@@ -6,6 +6,7 @@ import { SkeletonKpi } from '../../components/Skeleton';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
 import { formatEnum } from '../../utils/labels';
+import { formatLocalDate } from '../../utils/date';
 import type { SosAlert } from '../../types';
 
 const now = new Date();
@@ -181,7 +182,7 @@ export class DashboardPage extends NixComponent {
                                 <div class="list-item" @click=${() => this.router.navigate(`/events/${e.id}`)}>
                                     <div class="list-item-info">
                                         <h4>${e.title}</h4>
-                                        <p>${new Date(e.date).toLocaleDateString('es-CO')} · ${e.meetingPoint || 'Punto de encuentro'}</p>
+                                        <p>${formatLocalDate(e.date)} · ${e.meetingPoint || 'Punto de encuentro'}</p>
                                     </div>
                                     <div class="list-item-meta">
                                         <span class="badge badge-${e.status}">${formatEnum(e.status)}</span>
@@ -257,7 +258,7 @@ export class DashboardPage extends NixComponent {
                                 <div class="list-item" @click=${() => this.router.navigate(`/events/${e.id}`)}>
                                     <div class="list-item-info">
                                         <h4>${e.title}</h4>
-                                        <p>${new Date(e.date).toLocaleDateString('es-CO')} · ${e.meetingPoint || 'Punto de encuentro'}</p>
+                                        <p>${formatLocalDate(e.date)} · ${e.meetingPoint || 'Punto de encuentro'}</p>
                                     </div>
                                     <div class="list-item-meta">
                                         <span class="badge badge-${e.status}">${formatEnum(e.status)}</span>

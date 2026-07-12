@@ -6,6 +6,7 @@ import { openConfirm } from '../../components/ConfirmModal';
 import { SkeletonTable } from '../../components/Skeleton';
 import { formatEnum } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
+import { formatLocalDate } from '../../utils/date';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
 import { clubLimitsQuery, refreshClubLimits, canCreateEvent, eventLimitText } from '../../stores/plans.store';
@@ -110,7 +111,7 @@ export class EventsListPage extends NixComponent {
                             return repeat(list, (e: any) => e.id, (e: any) => html`
                                 <tr @click=${() => this.router.navigate(`/events/${e.id}`)}>
                                     <td><strong>${e.title}</strong></td>
-                                    <td>${new Date(e.date).toLocaleDateString('es-CO')}</td>
+                                    <td>${formatLocalDate(e.date)}</td>
                                     <td><span class=${`badge badge-${e.status}`}>${formatEnum(e.status)}</span></td>
                                     <td><span class=${`badge ${this.difficultyBadge(e.difficulty)}`}>${formatEnum(e.difficulty)}</span></td>
                                     <td>${e.attendees?.length || 0}</td>

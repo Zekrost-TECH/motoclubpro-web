@@ -8,6 +8,7 @@ import { setPageTitle } from '../../stores/router.store';
 import { openConfirm } from '../../components/ConfirmModal';
 import { authStore } from '../../stores/auth.store';
 import { formatEnum } from '../../utils/labels';
+import { formatLocalDate } from '../../utils/date';
 
 export class EventGuestsPage extends NixComponent {
     private router = router;
@@ -122,7 +123,7 @@ export class EventGuestsPage extends NixComponent {
         <div class="page-header">
             <div class="page-header-left">
                 <h1 class="page-title">Invitados</h1>
-                <p class="page-subtitle">${() => this.event ? `${this.event.title} · ${new Date(this.event.date).toLocaleDateString('es-CO')}` : 'Cargando rodada...'}</p>
+                <p class="page-subtitle">${() => this.event ? `${this.event.title} · ${formatLocalDate(this.event.date)}` : 'Cargando rodada...'}</p>
             </div>
             <div class="page-header-actions" style="display:flex;align-items:center;gap:var(--mc-space-3);">
                 <button class="btn btn-secondary" @click=${() => this.router.navigate(`/events/${this.eventId}`)}>
