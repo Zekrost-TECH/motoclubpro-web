@@ -60,6 +60,7 @@ export interface Event {
     attendees: EventAttendee[];
     checklist: ChecklistItem[];
     inventory: InventoryItem[];
+    guests?: EventGuest[];
     createdAt: string;
 }
 
@@ -95,6 +96,19 @@ export interface InventoryItem {
     quantity?: number;
     totalQuantity: number;
     claimedBy?: string;
+}
+
+export type GuestType = 'acompañante' | 'invitado';
+
+export interface EventGuest {
+    id: string;
+    guestType: GuestType;
+    fullName: string;
+    phone?: string;
+    notes?: string;
+    confirmedAt?: string;
+    invitedBy: string;
+    inviterName?: string;
 }
 
 export interface Route {

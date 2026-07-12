@@ -9,6 +9,7 @@ import { EventsListPage } from './pages/events/EventsListPage';
 import { EventCreatePage } from './pages/events/EventCreatePage';
 import { EventDetailPage } from './pages/events/EventDetailPage';
 import { EventEditPage } from './pages/events/EventEditPage';
+import { EventGuestsPage } from './pages/events/EventGuestsPage';
 import { RoutesListPage } from './pages/routes/RoutesListPage';
 import { RouteCreatePage } from './pages/routes/RouteCreatePage';
 import { RouteDetailPage } from './pages/routes/RouteDetailPage';
@@ -35,6 +36,7 @@ export const router = createRouter([
             { path: '/events/create', component: () => new EventCreatePage() },
             { path: '/events/:id', component: () => new EventDetailPage() },
             { path: '/events/:id/edit', component: () => new EventEditPage() },
+            { path: '/events/:id/guests', component: () => new EventGuestsPage() },
             { path: '/routes', component: () => new RoutesListPage() },
             { path: '/routes/create', component: () => new RouteCreatePage() },
             { path: '/routes/:id', component: () => new RouteDetailPage() },

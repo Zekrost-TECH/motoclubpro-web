@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle, SosAlert, ClubRideRole, ClubLimits } from '../types';
+import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, EventGuest, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle, SosAlert, ClubRideRole, ClubLimits } from '../types';
 import { router } from '../router';
 
 const BASE_URL = (import.meta as any).env.VITE_WEB_API_URL || 'http://localhost:3000/api/v1';
@@ -125,6 +125,9 @@ function mapEvent(data: any): Event {
     }
     if (data.inventory) {
         (event as any).inventory = data.inventory.map(mapInventoryItem);
+    }
+    if (data.guests) {
+        (event as any).guests = data.guests.map(mapGuest);
     }
     return event;
 }
@@ -265,6 +268,19 @@ function mapInventoryItem(data: any): InventoryItem {
     };
 }
 
+function mapGuest(data: any): EventGuest {
+    return {
+        id: data.id,
+        guestType: data.guest_type ?? data.guestType ?? 'invitado',
+        fullName: data.full_name ?? data.fullName ?? '',
+        phone: data.phone,
+        notes: data.notes,
+        confirmedAt: data.confirmed_at ?? data.confirmedAt,
+        invitedBy: data.invited_by ?? data.invitedBy ?? '',
+        inviterName: data.inviter_name ?? data.inviterName,
+    };
+}
+
 export const api = {
     auth: {
         login: (email: string, password: string, turnstileToken?: string) =>
@@ -387,6 +403,16 @@ export const api = {
             request<void>(`/events/${id}/inventory`, { method: 'POST', body: JSON.stringify(item) }),
         removeInventoryItem: (eventId: string, itemId: string) =>
             request<void>(`/events/${eventId}/inventory/${itemId}`, { method: 'DELETE' }),
+        guests: {
+            list: (eventId: string) =>
+                request<EventGuest[]>(`/events/${eventId}/guests`).then((list) => (list || []).map(mapGuest)),
+            create: (eventId: string, data: { guest_type: string; full_name: string; phone?: string; notes?: string }) =>
+                request<EventGuest>(`/events/${eventId}/guests`, { method: 'POST', body: JSON.stringify(data) }).then(mapGuest),
+            update: (eventId: string, guestId: string, data: Partial<{ guest_type: string; full_name: string; phone?: string; notes?: string }>) =>
+                request<EventGuest>(`/events/${eventId}/guests/${guestId}`, { method: 'PATCH', body: JSON.stringify(data) }).then(mapGuest),
+            remove: (eventId: string, guestId: string) =>
+                request<void>(`/events/${eventId}/guests/${guestId}`, { method: 'DELETE', body: JSON.stringify({}) }),
+        },
     },
     routes: {
         list: () => request<Route[]>('/routes'),

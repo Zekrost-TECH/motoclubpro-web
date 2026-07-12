@@ -337,6 +337,18 @@ export class EventDetailPage extends NixComponent {
                             </div>
                         </div>
                     </div>
+                    <div class="dashboard-card">
+                        <div class="card-header"><h3><ion-icon name="person-add-outline"></ion-icon> Invitados (${() => (this.event?.guests || []).length})</h3></div>
+                        <div class="card-body">
+                            <div class="stat-list">
+                                <div class="stat-item"><span>Acompañantes</span><strong>${() => (this.event?.guests || []).filter((g: any) => g.guestType === 'acompañante').length}</strong></div>
+                                <div class="stat-item"><span>Invitados con moto</span><strong>${() => (this.event?.guests || []).filter((g: any) => g.guestType === 'invitado').length}</strong></div>
+                            </div>
+                            <div style="margin-top:var(--mc-space-4);">
+                                <button class="btn btn-sm btn-secondary" @click=${() => this.router.navigate(`/events/${this.eventId}/guests`)}>Gestionar invitados</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 ${() => hasFeature('checklist') ? html`
                 <div class="dashboard-card" style="margin-top:var(--mc-space-6);">
