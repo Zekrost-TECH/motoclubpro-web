@@ -319,12 +319,13 @@ export class EventDetailPage extends NixComponent {
                                                 <tr>
                                                     <td>${a.userName}</td>
                                                     <td>
-                                                        <select class="input" value=${() => a.rideRole} @change=${(e: Event) => this.confirmSetRole(a.userId, a.userName, (e.target as HTMLSelectElement).value as RideRole)} style="height:32px;min-width:160px;padding:0 var(--mc-space-3);">
+                                                        <select class="input" @change=${(e: Event) => this.confirmSetRole(a.userId, a.userName, (e.target as HTMLSelectElement).value as RideRole)} style="height:32px;min-width:160px;padding:0 var(--mc-space-3);">
                                                             ${() => {
                                 const roles = this.rideRolesQuery.data.value ?? [];
+                                const currentRole = a.rideRole;
                                 return roles.length
-                                    ? roles.map((r: ClubRideRole) => html`<option value="${r.slug}">${r.name}</option>`)
-                                    : html`<option value="${a.rideRole}">${a.rideRole}</option>`;
+                                    ? roles.map((r: ClubRideRole) => html`<option value="${r.slug}" selected=${r.slug === currentRole}>${r.name}</option>`)
+                                    : html`<option value="${currentRole}" selected>${currentRole}</option>`;
                             }}
                                                         </select>
                                                     </td>
