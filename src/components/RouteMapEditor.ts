@@ -166,7 +166,7 @@ export class RouteMapEditor extends NixComponent {
             this._polyline = new maps.Polyline({
                 path,
                 geodesic: true,
-                strokeColor: '#FF6B00',
+                strokeColor: '#38BDF8',
                 strokeOpacity: 1.0,
                 strokeWeight: 3,
                 map: this._map,

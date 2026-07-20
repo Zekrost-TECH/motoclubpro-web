@@ -2,6 +2,7 @@ import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
 import { html, NixComponent } from '@deijose/nix-js';
 import { myClubs, switchClub } from '../../stores/clubs.store';
+import { themeStore } from '../../stores/theme.store';
 
 export class ClubSelectorPage extends NixComponent {
     private router = router;
@@ -20,7 +21,7 @@ export class ClubSelectorPage extends NixComponent {
         <div class="auth-page">
             <div class="auth-card">
                 <div class="auth-header">
-                    <img src="/nix-js-logo.png" alt="BikerOS" class="auth-logo" />
+                    <img src=${() => `${themeStore.theme.value === 'dark' ? "/BikerOS_Imagotipo_Negativo.webp" : "/BikerOS_Imagotipo_Principal.webp"}`} height="48px" alt="BikerOS" class="auth-logo" />
                     <h1>Selecciona tu Club</h1>
                     <p>Elige el club que quieres administrar</p>
                 </div>

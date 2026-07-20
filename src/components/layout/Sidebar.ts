@@ -8,6 +8,7 @@ import { routerPath } from '../../stores/router.store';
 import { ROLE_LABELS } from '../../utils/labels';
 import { hasFeature } from '../../stores/plans.store';
 import type { ClubLimits } from '../../types';
+import { themeStore } from '../../stores/theme.store';
 
 interface NavItem { label: string; path: string; icon: string; admin?: boolean; leader?: boolean; superadmin?: boolean; feature?: keyof ClubLimits['features']; }
 
@@ -40,8 +41,7 @@ export function Sidebar(): NixTemplate {
     return html`
         <aside class=${() => `sidebar ${mobileMenuOpen.value ? 'open' : ''}`}>
             <div class="sidebar-header">
-                <img src="/nix-js-logo.png" alt="BikerOS" class="sidebar-logo" />
-                <h2>BikerOS</h2>
+                <img src=${() => `${themeStore.theme.value === 'dark' ? "/BikerOS_Imagotipo_Negativo.webp" : "/BikerOS_Imagotipo_Principal.webp"}`} height="48px" alt="BikerOS" class="sidebar-logo" />
                 ${() => activeClub.value
             ? html`<span class="sidebar-club">${activeClub.value.name}</span>`
             : ''}

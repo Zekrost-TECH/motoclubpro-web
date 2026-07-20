@@ -53,7 +53,7 @@ export class MapView extends NixComponent {
             new maps.Polyline({
                 path,
                 geodesic: true,
-                strokeColor: '#FF6B00',
+                strokeColor: '#38BDF8',
                 strokeOpacity: 1.0,
                 strokeWeight: 4,
                 map: this._map,

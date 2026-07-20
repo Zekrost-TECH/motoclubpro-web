@@ -10,6 +10,7 @@ import {
     getTurnstileToken,
     resetTurnstile,
 } from '../../services/turnstile.service';
+import { themeStore } from '../../stores/theme.store';
 
 export class LoginPage extends NixComponent {
     private router = router;
@@ -103,8 +104,7 @@ export class LoginPage extends NixComponent {
         <div class="auth-page">
             <div class="auth-card">
                 <div class="auth-header">
-                    <img src="/nix-js-logo.png" alt="BikerOS" class="auth-logo" />
-                    <h1>BikerOS</h1>
+                    <img src=${() => `${themeStore.theme.value === 'dark' ? "/BikerOS_Imagotipo_Negativo.webp" : "/BikerOS_Imagotipo_Principal.webp"}`} alt="BikerOS" height="64px" class="auth-logo" />
                     <p>Plataforma de Administración</p>
                 </div>
                 <form @submit.prevent=${this.form.handleSubmit((values) => this.handleSubmit(values))}>

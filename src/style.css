@@ -1,49 +1,55 @@
 /* ── BikerOS Design System Tokens ──────────────────────────────────── */
 :root {
   /* Primitive palette */
-  --mc-ink-900: #0B0C0E;
-  --mc-ink-800: #12151A;
-  --mc-ink-700: #1A1E24;
-  --mc-ink-600: #252A32;
-  --mc-ink-500: #3B424D;
-  --mc-ink-400: #6B7280;
-  --mc-ink-300: #9CA3AF;
-  --mc-ink-200: #D1D5DB;
-  --mc-ink-100: #F3F4F6;
-  --mc-amber-500: #FF6B00;
-  --mc-amber-400: #FF8A2C;
-  --mc-amber-300: #FFB36B;
-  --mc-amber-600: #D95A00;
+  --mc-navy: #111827;
+  --mc-navy-light: #1B2436;
+  --mc-navy-dark: #0B0F17;
+  --mc-sky-500: #38BDF8;
+  --mc-sky-400: #7DD3FC;
+  --mc-sky-300: #BAE6FD;
+  --mc-sky-600: #0EA5E9;
+  --mc-sky-700: #0284C7;
+  --mc-ink-900: #0B0F17;
+  --mc-ink-850: #0E141F;
+  --mc-ink-800: #111827;
+  --mc-ink-700: #1B2436;
+  --mc-ink-600: #26334A;
+  --mc-ink-500: #3B4A63;
+  --mc-ink-400: #64748B;
+  --mc-ink-300: #94A3B8;
+  --mc-ink-200: #CBD5E1;
+  --mc-ink-100: #F8FAFC;
   --mc-danger-500: #EF4444;
   --mc-danger-400: #F87171;
   --mc-success-500: #22C55E;
   --mc-success-400: #4ADE80;
   --mc-warning-500: #EAB308;
-  --mc-info-500: #3B82F6;
-  --mc-white: #FFFFFF;
+  --mc-info-500: #38BDF8;
+  --mc-white: #F8FAFC;
   --mc-black: #000000;
 
   /* Semantic tokens */
-  --mc-bg-body: var(--mc-ink-900);
-  --mc-bg-panel: var(--mc-ink-800);
-  --mc-bg-card: var(--mc-ink-700);
+  --mc-bg-body: var(--mc-navy-dark);
+  --mc-bg-panel: var(--mc-navy);
+  --mc-bg-card: var(--mc-navy-light);
   --mc-bg-card-hover: var(--mc-ink-600);
-  --mc-bg-input: var(--mc-ink-800);
+  --mc-bg-input: var(--mc-navy);
   --mc-bg-input-focus: var(--mc-ink-700);
-  --mc-border: rgba(255, 255, 255, 0.08);
-  --mc-border-strong: rgba(255, 255, 255, 0.14);
-  --mc-text-primary: var(--mc-ink-100);
+  --mc-border: rgba(248, 250, 252, 0.08);
+  --mc-border-strong: rgba(248, 250, 252, 0.14);
+  --mc-text-primary: var(--mc-white);
   --mc-text-secondary: var(--mc-ink-300);
   --mc-text-muted: var(--mc-ink-400);
-  --mc-text-inverse: var(--mc-ink-900);
-  --mc-accent: var(--mc-amber-500);
-  --mc-accent-hover: var(--mc-amber-400);
-  --mc-accent-active: var(--mc-amber-600);
-  --mc-accent-glow: rgba(255, 107, 0, 0.25);
+  --mc-text-inverse: var(--mc-navy-dark);
+  --mc-accent: var(--mc-sky-500);
+  --mc-accent-hover: var(--mc-sky-400);
+  --mc-accent-active: var(--mc-sky-600);
+  --mc-accent-glow: rgba(56, 189, 248, 0.25);
+  --mc-cyan-glow: rgba(56, 189, 248, 0.22);
   --mc-danger-bg: rgba(239, 68, 68, 0.12);
   --mc-success-bg: rgba(34, 197, 94, 0.12);
   --mc-warning-bg: rgba(234, 179, 8, 0.12);
-  --mc-info-bg: rgba(59, 130, 246, 0.12);
+  --mc-info-bg: rgba(56, 189, 248, 0.12);
 
   /* Typography */
   --mc-text-xs: 0.75rem;
@@ -53,7 +59,9 @@
   --mc-text-lg: 1.125rem;
   --mc-text-xl: 1.375rem;
   --mc-text-2xl: 1.75rem;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mc-font-display: 'Exo 2', 'Outfit', sans-serif;
+  --mc-font-body: 'Glacial Indifference', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--mc-font-body);
   font-size: var(--mc-text-base);
   color: var(--mc-text-primary);
   background: var(--mc-bg-body);
@@ -84,32 +92,32 @@
   --mc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
   --mc-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.25);
   --mc-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-  --mc-shadow-amber: 0 0 18px var(--mc-accent-glow);
+  --mc-shadow-accent: 0 0 18px var(--mc-accent-glow);
   --mc-shadow-danger: 0 0 18px rgba(239, 68, 68, 0.25);
 }
 
 html[data-theme="light"] {
-  --mc-bg-body: #F3F4F6;
+  --mc-bg-body: #F8FAFC;
   --mc-bg-panel: #FFFFFF;
   --mc-bg-card: #FFFFFF;
-  --mc-bg-card-hover: #F3F4F6;
+  --mc-bg-card-hover: #F1F5F9;
   --mc-bg-input: #FFFFFF;
-  --mc-bg-input-focus: #F3F4F6;
-  --mc-border: rgba(0, 0, 0, 0.08);
-  --mc-border-strong: rgba(0, 0, 0, 0.14);
+  --mc-bg-input-focus: #F1F5F9;
+  --mc-border: rgba(17, 24, 39, 0.08);
+  --mc-border-strong: rgba(17, 24, 39, 0.14);
   --mc-text-primary: #111827;
   --mc-text-secondary: #4B5563;
-  --mc-text-muted: #6B7280;
+  --mc-text-muted: #64748B;
   --mc-text-inverse: #FFFFFF;
-  --mc-accent-glow: rgba(255, 107, 0, 0.18);
+  --mc-accent-glow: rgba(56, 189, 248, 0.22);
   --mc-danger-bg: rgba(239, 68, 68, 0.08);
   --mc-success-bg: rgba(34, 197, 94, 0.08);
   --mc-warning-bg: rgba(234, 179, 8, 0.08);
-  --mc-info-bg: rgba(59, 130, 246, 0.08);
+  --mc-info-bg: rgba(56, 189, 248, 0.08);
   --mc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
   --mc-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
   --mc-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
-  --mc-shadow-amber: 0 0 18px var(--mc-accent-glow);
+  --mc-shadow-accent: 0 0 18px var(--mc-accent-glow);
   --mc-shadow-danger: 0 0 18px rgba(239, 68, 68, 0.15);
 }
 
@@ -166,10 +174,8 @@ body {
 }
 
 .sidebar-logo {
-  width: 48px;
-  height: 48px;
   border-radius: var(--mc-radius-lg);
-  box-shadow: var(--mc-shadow-amber);
+  /* box-shadow: var(--mc-shadow-accent); */
 }
 
 .sidebar-header h2 {
@@ -180,7 +186,7 @@ body {
 }
 
 .sidebar-club {
-  font-size: var(--mc-text-xs);
+  font-size: var(--mc-text-md);
   color: var(--mc-text-muted);
   display: block;
   margin-top: var(--mc-space-1);
@@ -229,7 +235,7 @@ body {
 .sidebar-nav-item.active {
   color: var(--mc-text-primary);
   background: var(--mc-accent-glow);
-  box-shadow: var(--mc-shadow-amber);
+  box-shadow: var(--mc-shadow-accent);
 }
 
 .sidebar-nav-item.active::before {
@@ -494,10 +500,9 @@ body {
 }
 
 .auth-logo {
-  width: 64px;
-  height: 64px;
   border-radius: var(--mc-radius-xl);
-  box-shadow: var(--mc-shadow-amber);
+  margin-bottom: 4px;
+  /* box-shadow: var(--mc-shadow-accent); */
 }
 
 .auth-header h1 {
@@ -669,7 +674,7 @@ select.input {
 .btn-primary:hover {
   background: var(--mc-accent-hover);
   border-color: var(--mc-accent-hover);
-  box-shadow: var(--mc-shadow-amber);
+  box-shadow: var(--mc-shadow-accent);
 }
 
 .btn-primary:active {
@@ -1255,7 +1260,7 @@ select.input {
 
 .club-card:hover {
   border-color: var(--mc-accent);
-  box-shadow: var(--mc-shadow-amber);
+  box-shadow: var(--mc-shadow-accent);
   transform: translateY(-1px);
 }
 
@@ -1359,7 +1364,7 @@ select.input {
   background: var(--mc-accent-glow);
   border-color: var(--mc-accent);
   color: var(--mc-text-primary);
-  box-shadow: var(--mc-shadow-amber);
+  box-shadow: var(--mc-shadow-accent);
 }
 
 .theme-option ion-icon {
