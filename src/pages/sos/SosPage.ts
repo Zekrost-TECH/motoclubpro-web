@@ -1,5 +1,5 @@
 import { html, NixComponent, signal, repeat } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { createQuery, createCommand, updateQueryData } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { setPageTitle } from '../../stores/router.store';
 import { SkeletonTable } from '../../components/Skeleton';
@@ -8,6 +8,7 @@ import { openConfirm } from '../../components/ConfirmModal';
 import { MapView } from '../../components/MapView';
 import { FeatureLocked } from '../../components/FeatureLocked';
 import { hasFeature } from '../../stores/plans.store';
+import { activeClub } from '../../stores/clubs.store';
 import type { SosAlert, SosStatus } from '../../types';
 
 export class SosPage extends NixComponent {
@@ -28,9 +29,33 @@ export class SosPage extends NixComponent {
         async (id: string) => api.sos.resolve(id),
         {
             mode: 'latest',
-            onSuccess: () => {
-                invalidateQueries('sos/list');
-                invalidateQueries('sos/active');
+            onSuccess: (current: SosAlert) => {
+                // --- sos/list: paginated wrapper with page/pageSize params ---
+                updateQueryData<{ data: SosAlert[]; meta: any }>(
+                    'sos/list',
+                    (cached: any) => {
+                        if (!cached?.data?.length) return cached;
+                        const idx = cached.data.findIndex((a: any) => a.id === current.id);
+                        if (idx === -1) return cached;
+                        const list = [...cached.data];
+                        list[idx] = { ...list[idx], status: 'resuelta' };
+                        return { ...cached, data: list };
+                    },
+                    { params: { page: this.page.value, pageSize: this.pageSize.value } }
+                );
+
+                // --- sos/active: plain array with clubId params ---
+                updateQueryData<SosAlert[]>(
+                    'sos/active',
+                    (data = []) => {
+                        const idx = data.findIndex((a) => a.id === current.id);
+                        if (idx === -1) return data;
+                        const list = [...data];
+                        list[idx] = { ...list[idx], status: 'resuelta' };
+                        return list;
+                    },
+                    { params: { clubId: activeClub.value?.id || '' } }
+                );
             },
         }
     );
@@ -82,91 +107,198 @@ export class SosPage extends NixComponent {
 
     render() {
         if (!hasFeature('support_points')) {
-            return html`${FeatureLocked({ feature: 'Alertas SOS', plan: 'Básico' })}`;
+            return html`
+                ${FeatureLocked({ feature: 'Alertas SOS', plan: 'Básico' })}
+            `;
         }
         return html`
-        <div class="page-header">
-            <div class="page-header-left">
-                <h1 class="page-title">Alertas SOS</h1>
-                <p class="page-subtitle">Historial y gestión de alertas del club</p>
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h1 class="page-title">
+                        Alertas SOS
+                    </h1>
+                    <p class="page-subtitle">
+                        Historial y gestión de alertas del club
+                    </p>
+                </div>
             </div>
-        </div>
-        <div class="toolbar">
-            <select class="input" @change=${(e: any) => { this.statusFilter.update(() => e.target.value); this.page.update(() => 1); }}>
-                <option value="all">Todas</option>
-                <option value="activa">Activas</option>
-                <option value="resuelta">Resueltas</option>
-                <option value="cancelada">Canceladas</option>
-            </select>
-            <div class="toolbar-spacer"></div>
-            <span class="text-secondary">${() => this.paginationMeta()?.total || 0} alertas totales</span>
-        </div>
-        ${() => {
+            <div class="toolbar">
+                <select
+                    class="input"
+                    @change=${(e: any) => { this.statusFilter.update(() => e.target.value); this.page.update(() => 1); }}
+                >
+                    <option value="all">
+                        Todas
+                    </option>
+                    <option value="activa">
+                        Activas
+                    </option>
+                    <option value="resuelta">
+                        Resueltas
+                    </option>
+                    <option value="cancelada">
+                        Canceladas
+                    </option>
+                </select>
+                <div class="toolbar-spacer">
+                </div>
+                <span class="text-secondary">
+                ${() => this.paginationMeta()?.total || 0}
+                alertas totales</span>
+            </div>
+            ${() => {
                 const waypoints = this.mapWaypoints();
                 return waypoints.length
-                    ? html`<div class="dashboard-card" style="margin-bottom:var(--mc-space-6);overflow:hidden;">
-                    <div class="card-header"><h3><ion-icon name="map-outline"></ion-icon> Ubicación de alertas</h3></div>
-                    <div class="card-body" style="padding:0;">${new MapView(waypoints)}</div>
-                </div>`
+                    ? html`
+                        <div
+                            class="dashboard-card"
+                            style="margin-bottom:var(--mc-space-6);overflow:hidden;"
+                        >
+                            <div class="card-header">
+                                <h3>
+                                    <ion-icon name="map-outline">
+                                    </ion-icon>
+                                    Ubicación de alertas
+                                </h3>
+                            </div>
+                            <div class="card-body" style="padding:0;">
+                                ${new MapView(waypoints)}
+                            </div>
+                        </div>
+                    `
                     : '';
             }}
-        <div class="data-table-wrapper">
-            ${() => this.sosQuery.status.value === 'pending'
+            <div class="data-table-wrapper">
+                ${() => this.sosQuery.status.value === 'pending'
                 ? SkeletonTable(5)
                 : this.sosQuery.status.value === 'error'
-                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar alertas SOS</div>`
+                    ? html`
+                        <div class="alert alert-error">
+                            <ion-icon name="alert-circle-outline">
+                            </ion-icon>
+                            Error al cargar alertas SOS
+                        </div>
+                    `
                     : html`
-                    <table class="data-table">
-                        <thead>
-                            <tr><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Descripción</th><th>Ubicación</th><th></th></tr>
-                        </thead>
-                        <tbody>
-                            ${() => {
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Fecha
+                                    </th>
+                                    <th>
+                                        Tipo
+                                    </th>
+                                    <th>
+                                        Estado
+                                    </th>
+                                    <th>
+                                        Descripción
+                                    </th>
+                                    <th>
+                                        Ubicación
+                                    </th>
+                                    <th>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${() => {
                             const list = this.filtered();
-                            if (!list.length) return html`<tr><td colspan="6" class="empty">Sin alertas SOS registradas.</td></tr>`;
-                            return repeat(list, (a: SosAlert) => a.id, (a: SosAlert) => html`
-                                    <tr>
-                                        <td>${this.formatDate(a.created_at || a.createdAt)}</td>
-                                        <td><strong>${formatEnum(a.type)}</strong></td>
-                                        <td><span class=${`badge ${this.badgeClass(a.status)}`}>${formatEnum(a.status)}</span></td>
-                                        <td>${a.description || '-'}</td>
-                                        <td>
-                                            ${() => {
+                            if (!list.length) return html`
+                                        <tr>
+                                            <td colspan="6" class="empty">
+                                                Sin alertas SOS registradas.
+                                            </td>
+                                        </tr>
+                                    `;
+                            return repeat(list, (a: SosAlert) => `${a.id}-${a.status}`, (a: SosAlert) => html`
+                                        <tr>
+                                            <td>
+                                                ${this.formatDate(a.created_at || a.createdAt)}
+                                            </td>
+                                            <td>
+                                                <strong>
+                                                ${formatEnum(a.type)}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <span class=${`badge ${this.badgeClass(a.status)}`}>
+                                                ${formatEnum(a.status)}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                ${a.description || '-'}
+                                            </td>
+                                            <td>
+                                                ${() => {
                                     const link = this.googleMapsLink(a);
                                     return link
-                                        ? html`<a href=${link} target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><ion-icon name="location-outline"></ion-icon> Ver mapa</a>`
+                                        ? html`
+                                                            <a
+                                                                href=${link}
+                                                                target="_blank"
+                                                                rel="noopener"
+                                                                class="btn btn-ghost btn-sm"
+                                                            >
+                                                                <ion-icon name="location-outline">
+                                                                </ion-icon>
+                                                                Ver mapa
+                                                            </a>
+                                                        `
                                         : '-';
                                 }}
-                                        </td>
-                                        <td>
-                                            <div class="table-actions">
-                                                ${a.status === 'activa' ? html`
-                                                    <button class="btn btn-sm btn-success" @click=${() => this.confirmResolve(a.id, a.type)} disabled=${() => this.resolveSos.isPending.value}>
-                                                        <ion-icon name="checkmark-outline"></ion-icon> Resolver
-                                                    </button>
-                                                ` : ''}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `);
+                                            </td>
+                                            <td>
+                                                <div class="table-actions">
+                                                    ${a.status === 'activa' ? html`
+                                                        <button
+                                                            class="btn btn-sm btn-success"
+                                                            @click=${() => this.confirmResolve(a.id, a.type)}
+                                                            disabled=${() => this.resolveSos.isPending.value}
+                                                        >
+                                                            <ion-icon name="checkmark-outline">
+                                                            </ion-icon>
+                                                            Resolver
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `);
                         }}
-                        </tbody>
-                    </table>
-                    ${() => {
+                            </tbody>
+                        </table>
+                        ${() => {
                             const meta = this.paginationMeta();
                             if (!meta || meta.totalPages <= 1) return '';
                             const current = meta.page;
                             const total = meta.totalPages;
                             return html`
-                            <div class="pagination" style="display:flex;align-items:center;justify-content:center;gap:var(--mc-space-3);margin-top:var(--mc-space-4);">
-                                <button class="btn btn-sm" disabled=${current <= 1} @click=${() => this.page.update(v => Math.max(1, v - 1))}>Anterior</button>
-                                <span class="text-secondary">Página ${current} de ${total}</span>
-                                <button class="btn btn-sm" disabled=${current >= total} @click=${() => this.page.update(v => Math.min(total, v + 1))}>Siguiente</button>
-                            </div>
-                        `;
+                                <div
+                                    class="pagination"
+                                    style="display:flex;align-items:center;justify-content:center;gap:var(--mc-space-3);margin-top:var(--mc-space-4);"
+                                >
+                                    <button
+                                        class="btn btn-sm"
+                                        disabled=${current <= 1}
+                                        @click=${() => this.page.update(v => Math.max(1, v - 1))}
+                                    >
+                                        Anterior
+                                    </button>
+                                    <span class="text-secondary">Página ${current} de ${total}</span>
+                                    <button
+                                        class="btn btn-sm"
+                                        disabled=${current >= total}
+                                        @click=${() => this.page.update(v => Math.min(total, v + 1))}
+                                    >
+                                        Siguiente
+                                    </button>
+                                </div>
+                            `;
                         }}
-                `}
-        </div>
+                    `}
+            </div>
         `;
     }
 }
