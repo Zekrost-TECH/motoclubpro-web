@@ -61,11 +61,11 @@ export class BillingPage extends NixComponent {
     fillForm(data: any) {
         if (!data) return;
         this.nit.update(() => data.nit || '');
-        this.billingAddress.update(() => data.billing_address || '');
-        this.billingPhone.update(() => data.billing_phone || '');
-        this.billingContactName.update(() => data.billing_contact_name || '');
-        this.billingContactEmail.update(() => data.billing_contact_email || '');
-        this.taxRegime.update(() => data.tax_regime || '');
+        this.billingAddress.update(() => data.billingAddress || '');
+        this.billingPhone.update(() => data.billingPhone || '');
+        this.billingContactName.update(() => data.billingContactName || '');
+        this.billingContactEmail.update(() => data.billingContactEmail || '');
+        this.taxRegime.update(() => data.taxRegime || '');
     }
 
     async handleSaveBilling() {

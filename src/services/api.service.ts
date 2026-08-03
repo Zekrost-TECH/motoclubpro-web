@@ -98,6 +98,21 @@ export function getActiveClub(): string | null {
 
 // ── Event mappers (snake_case ↔ camelCase) ───────────────────────────────
 
+// El backend devuelve la facturación en snake_case pero espera camelCase
+// al escribir. Normalizar a camelCase aquí evita depender de esa asimetría
+// en las páginas.
+function mapBilling(data: any): any {
+    if (!data || typeof data !== 'object') return data;
+    return {
+        nit: data.nit,
+        billingAddress: data.billing_address,
+        billingPhone: data.billing_phone,
+        billingContactName: data.billing_contact_name,
+        billingContactEmail: data.billing_contact_email,
+        taxRegime: data.tax_regime,
+    };
+}
+
 function mapEventStatus(status: string): Event['status'] {
     return status as Event['status'];
 }
@@ -325,7 +340,7 @@ export const api = {
             request<void>(`/clubs/${clubId}/members/${userId}`, { method: 'DELETE' }),
         update: (id: string, data: any) =>
             request<Club>(`/clubs/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-        getBilling: (id: string) => request<any>(`/clubs/${id}/billing`),
+        getBilling: (id: string) => request<any>(`/clubs/${id}/billing`).then(mapBilling),
         updateBilling: (id: string, data: any) =>
             request<void>(`/clubs/${id}/billing`, { method: 'PATCH', body: JSON.stringify(data) }),
     },
