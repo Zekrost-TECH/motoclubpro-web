@@ -1,4 +1,7 @@
 import { html, mount, RouterView, effect } from '@deijose/nix-js';
+// Registra los custom elements <ion-icon> versionados en el bundle
+// (antes se cargaba ionicons 7 desde unpkg, sin versionar en el build).
+import 'ionicons';
 import { router } from './router';
 import { refreshSession } from './stores/auth.store';
 import { loadClubs } from './stores/clubs.store';
