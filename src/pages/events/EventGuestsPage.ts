@@ -1,5 +1,5 @@
 import { router } from '../../router';
-import { html, NixComponent, createForm, repeat } from '@deijose/nix-js';
+import { html, signal, NixComponent, createForm, repeat } from '@deijose/nix-js';
 import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import type { Event, EventGuest, GuestType } from '../../types';
@@ -13,6 +13,7 @@ import { formatLocalDate } from '../../utils/date';
 export class EventGuestsPage extends NixComponent {
     private router = router;
     private eventId = this.router.params.value?.id || '';
+    editingGuest = signal<EventGuest | null>(null);
 
     guestForm = createForm(
         { fullName: '', guestType: 'invitado' as GuestType, phone: '', notes: '' },
@@ -72,6 +73,21 @@ export class EventGuestsPage extends NixComponent {
         }
     );
 
+    updateGuest = createCommand(
+        'events/guests/update',
+        async (payload: { eventId: string; guestId: string; data: Partial<{ guest_type: string; full_name: string; phone?: string; notes?: string }> }) =>
+            api.events.guests.update(payload.eventId, payload.guestId, payload.data),
+        {
+            mode: 'latest',
+            onSuccess: () => {
+                invalidateQueries('events/guests');
+                invalidateQueries('events/detail');
+                this.cancelEdit();
+                showToast('Invitado actualizado', 'success');
+            },
+        }
+    );
+
     onMount() {
         setPageTitle('Invitados de Rodada');
     }
@@ -92,20 +108,36 @@ export class EventGuestsPage extends NixComponent {
 
     async handleAddGuest() {
         try {
-            await this.addGuest.executeAsync({
-                eventId: this.eventId,
-                data: {
-                    full_name: this.guestForm.fields.fullName.value.value,
-                    guest_type: this.guestForm.fields.guestType.value.value,
-                    phone: this.guestForm.fields.phone.value.value || undefined,
-                    notes: this.guestForm.fields.notes.value.value || undefined,
-                },
-            });
-            showToast('Invitado agregado', 'success');
-            this.guestForm.reset({ fullName: '', guestType: 'invitado', phone: '', notes: '' });
+            const editing = this.editingGuest.value;
+            const data = {
+                full_name: this.guestForm.fields.fullName.value.value,
+                guest_type: this.guestForm.fields.guestType.value.value,
+                phone: this.guestForm.fields.phone.value.value || undefined,
+                notes: this.guestForm.fields.notes.value.value || undefined,
+            };
+            if (editing) {
+                await this.updateGuest.executeAsync({ eventId: this.eventId, guestId: editing.id, data });
+            } else {
+                await this.addGuest.executeAsync({ eventId: this.eventId, data });
+                showToast('Invitado agregado', 'success');
+                this.guestForm.reset({ fullName: '', guestType: 'invitado', phone: '', notes: '' });
+            }
         } catch (err: any) {
-            showToast(err.message || 'Error al agregar invitado', 'error');
+            showToast(err.message || 'Error al guardar invitado', 'error');
         }
+    }
+
+    startEdit(guest: EventGuest) {
+        this.editingGuest.update(() => guest);
+        this.guestForm.fields.fullName.value.update(() => guest.fullName);
+        this.guestForm.fields.guestType.value.update(() => guest.guestType);
+        this.guestForm.fields.phone.value.update(() => guest.phone || '');
+        this.guestForm.fields.notes.value.update(() => guest.notes || '');
+    }
+
+    cancelEdit() {
+        this.editingGuest.update(() => null);
+        this.guestForm.reset({ fullName: '', guestType: 'invitado', phone: '', notes: '' });
     }
 
     confirmRemove(guest: EventGuest) {
@@ -133,7 +165,7 @@ export class EventGuestsPage extends NixComponent {
         </div>
         <div class="dashboard-grid">
             <div class="dashboard-card">
-                <div class="card-header"><h3><ion-icon name="person-add-outline"></ion-icon> Agregar Invitado</h3></div>
+                <div class="card-header"><h3><ion-icon name="person-add-outline"></ion-icon> ${() => this.editingGuest.value ? `Editar a ${this.editingGuest.value.fullName}` : 'Agregar Invitado'}</h3></div>
                 <div class="card-body">
                     <form style="display:flex;flex-wrap:wrap;gap:var(--mc-space-3);margin-bottom:var(--mc-space-4);align-items:flex-end;" @submit.prevent=${() => this.handleAddGuest()}>
                         <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0;">
@@ -155,9 +187,14 @@ export class EventGuestsPage extends NixComponent {
                             <label>Notas</label>
                             <input type="text" value=${() => this.guestForm.fields.notes.value.value} @input=${this.guestForm.fields.notes.onInput} placeholder="Opcional" />
                         </div>
-                        <button type="submit" class="btn btn-sm btn-primary" disabled=${() => this.addGuest.isPending.value || this.guestForm.isSubmitting.value} style="height:38px;">
-                            <ion-icon name="add-outline"></ion-icon>
+                        <button type="submit" class="btn btn-sm btn-primary" disabled=${() => this.addGuest.isPending.value || this.updateGuest.isPending.value || this.guestForm.isSubmitting.value} style="height:38px;">
+                            <ion-icon name="checkmark-outline"></ion-icon>
                         </button>
+                        ${() => this.editingGuest.value ? html`
+                            <button type="button" class="btn btn-sm btn-secondary" @click=${() => this.cancelEdit()} style="height:38px;">
+                                <ion-icon name="close-outline"></ion-icon>
+                            </button>
+                        ` : ''}
                     </form>
                     <p style="color:var(--mc-text-secondary);font-size:0.875rem;">
                         <ion-icon name="information-circle-outline"></ion-icon>
@@ -195,9 +232,14 @@ export class EventGuestsPage extends NixComponent {
                                         <td>${g.inviterName || g.invitedBy}</td>
                                         <td>
                                             ${() => this.canRemove(g) ? html`
-                                                <button class="btn-icon danger" @click=${() => this.confirmRemove(g)} title="Eliminar">
-                                                    <ion-icon name="trash-outline"></ion-icon>
-                                                </button>
+                                                <div class="actions">
+                                                    <button class="btn-icon" @click=${() => this.startEdit(g)} title="Editar">
+                                                        <ion-icon name="create-outline"></ion-icon>
+                                                    </button>
+                                                    <button class="btn-icon danger" @click=${() => this.confirmRemove(g)} title="Eliminar">
+                                                        <ion-icon name="trash-outline"></ion-icon>
+                                                    </button>
+                                                </div>
                                             ` : ''}
                                         </td>
                                     </tr>
