@@ -1,4 +1,4 @@
-import { html, NixComponent, createForm, required } from '@deijose/nix-js';
+import { html, NixComponent, createForm, required, effect } from '@deijose/nix-js';
 import { createQuery, createCommand, setQueryData } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
@@ -47,17 +47,35 @@ export class SettingsPage extends NixComponent {
         }
     );
 
+    private _formLoaded = false;
+
     onInit() {
         setPageTitle('Configuración');
+        // Llenar el form cuando la query resuelva (aunque onMount ya haya
+        // pasado): sin esto, si la query llega después del mount el form
+        // quedaba vacío hasta recargar.
+        effect(() => {
+            const data = this.clubQuery.data.value;
+            if (data && !this._formLoaded) {
+                this.fillForm(data);
+                this._formLoaded = true;
+            }
+        });
+    }
+
+    fillForm(data: any) {
+        if (!data) return;
+        this.form.fields.name.value.update(() => data.name || '');
+        this.form.fields.city.value.update(() => data.city || '');
+        this.form.fields.department.value.update(() => data.department || '');
+        this.form.fields.description.value.update(() => data.description || '');
     }
 
     onMount() {
         const data = this.clubQuery.data.value;
-        if (data) {
-            this.form.fields.name.value.update(() => data.name || '');
-            this.form.fields.city.value.update(() => data.city || '');
-            this.form.fields.department.value.update(() => data.department || '');
-            this.form.fields.description.value.update(() => data.description || '');
+        if (data && !this._formLoaded) {
+            this.fillForm(data);
+            this._formLoaded = true;
         }
     }
 
