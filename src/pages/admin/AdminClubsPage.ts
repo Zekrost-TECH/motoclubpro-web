@@ -3,7 +3,7 @@ import { createQuery } from '@deijose/nix-query';
 import { api } from '../../services/api.service';
 import { setPageTitle } from '../../stores/router.store';
 import { router } from '../../router';
-import { clubsStore } from '../../stores/clubs.store';
+import { switchClub } from '../../stores/clubs.store';
 import type { Club } from '../../types';
 
 export class AdminClubsPage extends NixComponent {
@@ -16,8 +16,10 @@ export class AdminClubsPage extends NixComponent {
         setPageTitle('Gestión de Clubs');
     }
 
-    enterClub(club: Club) {
-        clubsStore.setActiveClub(club);
+    async enterClub(club: Club) {
+        // switchClub setea el club activo (store + localStorage + header X-Club-ID),
+        // rota los tokens e invalida las queries del club anterior.
+        await switchClub(club.id);
         router.navigate('/dashboard');
     }
 
