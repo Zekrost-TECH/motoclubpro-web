@@ -1,5 +1,5 @@
 import { createStore } from '@deijose/nix-js';
-import { api, setActiveClub } from '../services/api.service';
+import { api, setActiveClub, setTokens } from '../services/api.service';
 import type { Club } from '../types';
 import { setQueryData, invalidateQueries } from '@deijose/nix-query';
 
@@ -74,12 +74,13 @@ export async function loadClubs(): Promise<void> {
 
 export async function switchClub(clubId: string): Promise<void> {
     const res = await api.auth.switchClub(clubId);
-    localStorage.setItem('mcp_access_token', res.access_token);
-    localStorage.setItem('mcp_refresh_token', res.refresh_token);
+    // Actualizar también el token en memoria del módulo api.service:
+    // escribir solo en localStorage dejaba las peticiones con el token
+    // del club anterior hasta recargar la página.
+    setTokens(res.access_token, res.refresh_token);
     setActiveClub(clubId);
 
     const active = (clubsStore.myClubs.value || []).find((c: Club) => c.id === clubId);
-    console.log({ active });
     if (active) {
         clubsStore.setActiveClub(active);
         setQueryData('club/settings', active);
