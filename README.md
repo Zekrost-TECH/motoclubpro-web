@@ -15,10 +15,11 @@ Panel de administracion web para BikerOS. Permite a administradores y lideres ge
 ## Arquitectura
 
 - **Sin Virtual DOM:** Nix.js actualiza nodos DOM individuales directamente via bindings reactivos.
-- **Hash Router:** `mode: 'hash'` para compatibilidad con hosting estatico (S3, Netlify, etc.).
+- **History Router:** `mode: 'history'` con guard `beforeEach` para auth y roles.
 - **Signals:** Estado reactivo con `signal()`, `effect()`, y `html\`\`` templates.
-- **Stores:** `createStore` para auth y clubs.
+- **Stores + nix-query:** `createStore` para auth y clubs; `createQuery`/`createCommand` para datos remotos con cache, invalidacion y optimistas.
 - **API Client:** Wrapper `fetch` con interceptores 401/403 y redireccion automatica a login.
+- **Tema:** CSS variables con paleta "sky" (azul claro) y soporte dark mode.
 
 ## Caracteristicas
 
@@ -50,6 +51,8 @@ src/
 |   |   |-- LoginPage.ts
 |   |-- clubs/
 |   |   |-- ClubSelectorPage.ts
+|   |-- admin/
+|   |   |-- AdminClubsPage.ts
 |   |-- dashboard/
 |   |   |-- DashboardPage.ts
 |   |-- events/
@@ -57,6 +60,7 @@ src/
 |   |   |-- EventCreatePage.ts
 |   |   |-- EventDetailPage.ts
 |   |   |-- EventEditPage.ts
+|   |   |-- EventGuestsPage.ts
 |   |-- routes/
 |   |   |-- RoutesListPage.ts
 |   |   |-- RouteCreatePage.ts
@@ -68,19 +72,27 @@ src/
 |   |   |-- MemberProfilePage.ts
 |   |-- support/
 |   |   |-- SupportPointsPage.ts
+|   |   |-- SupportPointDetailPage.ts
+|   |-- sos/
+|   |   |-- SosPage.ts
 |   |-- billing/
 |   |   |-- BillingPage.ts
 |   |-- reports/
 |   |   |-- ReportsPage.ts
 |   |-- settings/
 |   |   |-- SettingsPage.ts
+|   |   |-- RideRolesPage.ts
 |
 |-- services/
 |   |-- api.service.ts        # Cliente HTTP + endpoints
+|   |-- maps.ts                # Loader único de Google Maps
 |
 |-- stores/
 |   |-- auth.store.ts         # Estado de autenticacion
 |   |-- clubs.store.ts        # Estado de clubes
+|   |-- plans.store.ts        # Limites por plan
+|   |-- theme.store.ts        # Tema claro/oscuro
+|   |-- router.store.ts       # Ruta activa
 |
 |-- main.ts                   # Entry point: bootstrap + routing
 |-- router.ts                 # Configuracion de router + guards
