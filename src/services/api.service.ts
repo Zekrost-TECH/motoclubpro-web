@@ -321,10 +321,6 @@ export const api = {
     users: {
         list: () => request<User[]>('/users'),
         get: (id: string) => request<User>(`/users/${id}`).then(mapUser),
-        update: (id: string, data: Partial<User>) =>
-            request<User>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-        create: (data: Partial<User>) =>
-            request<User>('/users', { method: 'POST', body: JSON.stringify(data) }),
     },
     clubs: {
         list: () => request<Club[]>('/clubs'),
@@ -336,8 +332,6 @@ export const api = {
                 method: 'POST',
                 body: JSON.stringify({ email, role }),
             }),
-        removeMember: (clubId: string, userId: string) =>
-            request<void>(`/clubs/${clubId}/members/${userId}`, { method: 'DELETE' }),
         update: (id: string, data: any) =>
             request<Club>(`/clubs/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
         getBilling: (id: string) => request<any>(`/clubs/${id}/billing`).then(mapBilling),
@@ -439,20 +433,6 @@ export const api = {
         delete: (id: string) => request<void>(`/routes/${id}`, { method: 'DELETE' }),
         waypoints: (id: string) =>
             request<any[]>(`/routes/${id}/waypoints`).then((list) => (list || []).map(mapWaypoint)),
-        addWaypoint: (id: string, wp: Partial<Waypoint>) =>
-            request<Waypoint>(`/routes/${id}/waypoints`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    name: wp.name,
-                    location: { type: 'Point', coordinates: [wp.lng, wp.lat] },
-                    type: wp.type,
-                    sortOrder: wp.sortOrder ?? 0,
-                }),
-            }),
-        updateWaypoint: (id: string, wpId: string, wp: Partial<Waypoint>) =>
-            request<Waypoint>(`/routes/${id}/waypoints/${wpId}`, { method: 'PATCH', body: JSON.stringify(wp) }),
-        deleteWaypoint: (id: string, wpId: string) =>
-            request<void>(`/routes/${id}/waypoints/${wpId}`, { method: 'DELETE' }),
         addBatchWaypoints: (id: string, geojson: unknown) =>
             request<void>(`/routes/${id}/waypoints/batch`, { method: 'POST', body: JSON.stringify(geojson) }),
     },

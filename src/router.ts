@@ -70,27 +70,6 @@ router.beforeEach((to) => {
     return undefined;
 });
 
-export function requireAuth(): boolean {
-    if (!authStore.currentUser.value) {
-        router.navigate('/login');
-        return false;
-    }
-    return true;
-}
-
-export function requireAdmin(): boolean {
-    const user = authStore.currentUser.value;
-    if (!user) {
-        router.navigate('/login');
-        return false;
-    }
-    if (user.role !== 'superadmin' && user.role !== 'admin' && user.role !== 'leader') {
-        router.navigate('/');
-        return false;
-    }
-    return true;
-}
-
 export { authStore };
 
 

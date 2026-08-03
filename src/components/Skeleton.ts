@@ -1,14 +1,6 @@
 import { html } from '@deijose/nix-js';
 import type { NixTemplate } from '@deijose/nix-js';
 
-export function SkeletonText(lines: number = 1): NixTemplate {
-    return html`
-        <div class="skeleton-wrapper">
-            ${Array.from({ length: lines }, () => html`<div class="skeleton skeleton-text"></div>`)}
-        </div>
-    `;
-}
-
 export function SkeletonCard(): NixTemplate {
     return html`
         <div class="skeleton-card">

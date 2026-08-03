@@ -62,12 +62,6 @@ export function eventLimitText(): string {
     return `${limits.currentEventsMonth} / ${limits.maxEventsMonth}`;
 }
 
-export function isNearMemberLimit(): boolean {
-    const limits = getClubLimits();
-    if (!limits || limits.maxMembers < 0) return false;
-    return limits.currentMembers >= limits.maxMembers * 0.8;
-}
-
 export function isAtMemberLimit(): boolean {
     const limits = getClubLimits();
     if (!limits || limits.maxMembers < 0) return false;

@@ -12,19 +12,6 @@ export const ROLE_LABELS: Record<string, string> = {
     rider: 'Piloto',
 };
 
-export const RIDE_ROLE_LABELS: Record<string, string> = {
-    puntero: 'Puntero',
-    barredora: 'Barredora',
-    capitan_ruta: 'Capitán de ruta',
-    bloqueador: 'Bloqueador',
-    cierre_seguridad: 'Cierre / Seguridad',
-    jefe_armas: 'Jefe de armas',
-    primeros_auxilios: 'Primeros auxilios',
-    coordinador_logistico: 'Coordinador logístico',
-    comunicador: 'Comunicador',
-    rider: 'Piloto',
-};
-
 export function buildRideRoleLabels(roles: { slug: string; name: string }[]): Record<string, string> {
     const map: Record<string, string> = {};
     for (const role of roles) {
