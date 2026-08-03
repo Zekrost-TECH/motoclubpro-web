@@ -472,10 +472,11 @@ export const api = {
     },
     sos: {
         list: () => request<SosAlert[]>('/sos'),
-        listPaginated: (page?: number, limit?: number) => {
+        listPaginated: (page?: number, limit?: number, status?: string) => {
             const params = new URLSearchParams();
             if (page) params.set('page', String(page));
             if (limit) params.set('limit', String(limit));
+            if (status && status !== 'all') params.set('status', status);
             const query = params.toString();
             return requestRaw<{ data: SosAlert[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(`/sos${query ? '?' + query : ''}`);
         },

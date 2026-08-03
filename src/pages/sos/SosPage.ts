@@ -18,9 +18,10 @@ export class SosPage extends NixComponent {
 
     sosQuery = createQuery(
         'sos/list',
-        ({ page, pageSize }: { page: number; pageSize: number }) => api.sos.listPaginated(page, pageSize),
+        ({ page, pageSize, status }: { page: number; pageSize: number; status: string }) =>
+            api.sos.listPaginated(page, pageSize, status),
         {
-            params: () => ({ page: this.page.value, pageSize: this.pageSize.value }),
+            params: () => ({ page: this.page.value, pageSize: this.pageSize.value, status: this.statusFilter.value }),
             staleTime: 30_000,
         }
     );
@@ -41,7 +42,7 @@ export class SosPage extends NixComponent {
                         list[idx] = { ...list[idx], status: 'resuelta' };
                         return { ...cached, data: list };
                     },
-                    { params: { page: this.page.value, pageSize: this.pageSize.value } }
+                    { params: { page: this.page.value, pageSize: this.pageSize.value, status: this.statusFilter.value } }
                 );
 
                 // --- sos/active: plain array with clubId params ---
@@ -65,9 +66,9 @@ export class SosPage extends NixComponent {
     }
 
     filtered() {
-        const list = this.sosQuery.data.value?.data || [];
-        if (this.statusFilter.value === 'all') return list;
-        return list.filter((a) => a.status === this.statusFilter.value);
+        // El filtro por status ahora lo aplica el backend (GET /sos?status=)
+        // con paginación correcta; aquí solo se devuelve la página actual.
+        return this.sosQuery.data.value?.data || [];
     }
 
     paginationMeta() {
