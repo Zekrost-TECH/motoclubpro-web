@@ -58,7 +58,7 @@ export const router = createRouter([
     },
     { path: '/login', component: () => new LoginPage() },
     { path: '/select-club', component: () => new ClubSelectorPage() },
-    { path: '*', component: () => new AppLayout() },
+    { path: '*', component: () => new AppLayout(), beforeEnter: () => '/dashboard' },
 ], { mode: 'history' });
 
 router.beforeEach((to) => {
