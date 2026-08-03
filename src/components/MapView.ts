@@ -1,27 +1,7 @@
 import { NixComponent, html, ref } from '@deijose/nix-js';
+import { loadGoogleMaps } from '../services/maps';
 
-/* global google */
 declare const google: any;
-
-const API_KEY = (import.meta as any).env.VITE_GOOGLE_MAPS_API_KEY;
-
-let mapsPromise: Promise<any> | null = null;
-
-function loadGoogleMaps(): Promise<any> {
-    if (mapsPromise) return mapsPromise;
-    if ((window as any).google?.maps) return Promise.resolve((window as any).google.maps);
-
-    mapsPromise = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}`;
-        script.async = true;
-        script.defer = true;
-        script.onload = () => resolve((window as any).google.maps);
-        script.onerror = reject;
-        document.head.appendChild(script);
-    });
-    return mapsPromise;
-}
 
 interface Waypoint {
     lat: number;
