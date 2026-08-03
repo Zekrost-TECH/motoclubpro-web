@@ -8,17 +8,27 @@ import { showToast } from '../../components/Toast';
 
 export class MemberInvitePage extends NixComponent {
     email = signal('');
+    role = signal('rider');
     private router = router;
 
     inviteMember = createCommand(
         'members/invite',
-        async (payload: { clubId: string; email: string }) =>
-            api.clubs.inviteMember(payload.clubId, payload.email, 'rider'),
+        async (payload: { clubId: string; email: string; role: string }) =>
+            api.clubs.inviteMember(payload.clubId, payload.email, payload.role),
         {
             mode: 'latest',
             onSuccess: () => invalidateQueries('members/list'),
         }
     );
+
+    // El rol asignable depende del rol del usuario en el club (el backend
+    // también lo valida): admin → admin/leader/rider, leader → leader/rider.
+    assignableRoles(): string[] {
+        const myRole = activeClub.value?.role;
+        if (myRole === 'admin' || myRole === 'superadmin') return ['admin', 'leader', 'rider'];
+        if (myRole === 'leader') return ['leader', 'rider'];
+        return ['rider'];
+    }
 
     onMount() {
         setPageTitle('Invitar Miembro');
@@ -30,6 +40,7 @@ export class MemberInvitePage extends NixComponent {
             await this.inviteMember.executeAsync({
                 clubId: activeClub.value.id,
                 email: this.email.value,
+                role: this.role.value,
             });
             showToast('Invitación enviada', 'success');
             this.router.navigate('/members');
@@ -52,6 +63,12 @@ export class MemberInvitePage extends NixComponent {
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" value=${() => this.email.value} @input=${(e: any) => this.email.update(() => e.target.value)} placeholder="piloto@email.com" required />
+                </div>
+                <div class="form-group">
+                    <label>Rol en el club</label>
+                    <select value=${() => this.role.value} @change=${(e: any) => this.role.update(() => e.target.value)}>
+                        ${() => this.assignableRoles().map((r) => html`<option value=${r}>${r === 'rider' ? 'Piloto' : r === 'leader' ? 'Líder' : 'Admin'}</option>`)}
+                    </select>
                 </div>
             </div>
             <div class="form-actions">
