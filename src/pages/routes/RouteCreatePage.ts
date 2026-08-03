@@ -62,15 +62,18 @@ export class RouteCreatePage extends NixComponent {
 
     async handleSubmit() {
         try {
+            // El punto de inicio se deriva del primer waypoint (tipo 'inicio'):
+            // antes se enviaban startLat/startLng/startName siempre null.
+            const first = this.waypoints.value[0];
             const route = await this.createRoute.executeAsync({
                 name: this.name.value,
                 description: this.description.value,
                 difficulty: this.difficulty.value as any,
                 distance: Number(this.distance.value),
                 estimatedTime: this.estimatedTime.value,
-                startLat: this.startLat.value ?? undefined,
-                startLng: this.startLng.value ?? undefined,
-                startName: this.startName.value,
+                startLat: first?.lat ?? undefined,
+                startLng: first?.lng ?? undefined,
+                startName: first?.name ?? this.name.value,
             }) as Route;
             if (route?.id && this.waypoints.value.length > 0) {
                 const geojson = {
