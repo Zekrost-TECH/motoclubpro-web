@@ -3,6 +3,7 @@ import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-quer
 import { api } from '../../services/api.service';
 import { setPageTitle } from '../../stores/router.store';
 import { showToast } from '../../components/Toast';
+import { openConfirm } from '../../components/ConfirmModal';
 import { RideRoleModal } from '../../components/RideRoleModal';
 import type { ClubRideRole } from '../../types';
 
@@ -95,6 +96,12 @@ export class RideRolesPage extends NixComponent {
         }
     }
 
+    confirmDelete(role: ClubRideRole) {
+        openConfirm('Eliminar Rol', `¿Eliminar el rol "${role.name}"? Los asistentes que lo tengan asignado volverán a "Piloto".`, () => {
+            this.deleteRole.execute(role.id);
+        });
+    }
+
     render() {
         return html`
         <div class="page-header">
@@ -129,7 +136,7 @@ export class RideRolesPage extends NixComponent {
                                     <td>
                                         <div class="actions">
                                             <button class="btn-icon" @click=${() => this.openModal(r)} title="Editar"><ion-icon name="create-outline"></ion-icon></button>
-                                            <button class="btn-icon danger" @click=${() => this.deleteRole.execute(r.id)} title="Eliminar"><ion-icon name="trash-outline"></ion-icon></button>
+                                            <button class="btn-icon danger" @click=${() => this.confirmDelete(r)} title="Eliminar"><ion-icon name="trash-outline"></ion-icon></button>
                                         </div>
                                     </td>
                                 </tr>
