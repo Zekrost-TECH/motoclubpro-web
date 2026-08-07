@@ -25,6 +25,7 @@ export class LoginPage extends NixComponent {
         }
     );
     showPassword = signal(false);
+    showWelcome = false;
     turnstileWidgetId = signal<string | null>(null);
     turnstileContainer = ref<HTMLDivElement>();
     turnstileError = signal<string | null>(null);
@@ -32,6 +33,7 @@ export class LoginPage extends NixComponent {
 
     onMount() {
         setPageTitle('Ingresar');
+        this.showWelcome = new URLSearchParams(window.location.search).get('welcome') === '1';
         if (!isTurnstileEnabled() || !this.turnstileContainer.el) return;
 
         // El script de Turnstile puede tardar en cargar; reintentamos un par de veces.
@@ -107,6 +109,12 @@ export class LoginPage extends NixComponent {
                     <img src=${() => `${themeStore.theme.value === 'dark' ? "/BikerOS_Imagotipo_Negativo.webp" : "/BikerOS_Imagotipo_Principal.webp"}`} alt="BikerOS" height="64px" class="auth-logo" />
                     <p>Plataforma de Administración</p>
                 </div>
+                ${() => this.showWelcome ? html`
+                    <div class="alert alert-success" style="margin-bottom:var(--mc-space-3);">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                        Tu club está listo con 21 días de prueba gratis. Inicia sesión con tus credenciales.
+                    </div>
+                ` : ''}
                 <form @submit.prevent=${this.form.handleSubmit((values) => this.handleSubmit(values))}>
                     <div class="form-group">
                         <label>Email</label>

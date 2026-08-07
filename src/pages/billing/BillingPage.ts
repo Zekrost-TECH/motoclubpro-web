@@ -144,6 +144,10 @@ export class BillingPage extends NixComponent {
         return `$${Number(cents / 100).toLocaleString('es-CO', { maximumFractionDigits: 0 })}`;
     }
 
+    isTrialExpired(s: Subscription): boolean {
+        return s.status === 'trial' && !!s.endDate && new Date(s.endDate).getTime() < Date.now();
+    }
+
     async handleCheckout() {
         if (!this.selectedPlanId.value) {
             showToast('Selecciona un plan primero', 'error');
@@ -312,6 +316,7 @@ export class BillingPage extends NixComponent {
                                             <div class="stat-item"><span>Método de pago</span><strong>${s.hasPaymentSource ? `Tarjeta •••• ${s.paymentMethodLast4 ?? ''}` : 'Sin guardar'}</strong></div>
                                         </div>
                                         ${s.cancelAtPeriodEnd ? html`<div class="alert alert-warning" style="margin-top:var(--mc-space-3);">Suscripción cancelada — vencerá el ${s.endDate ? new Date(s.endDate).toLocaleDateString('es-CO') : 'fin de período'}.</div>` : ''}
+                                        ${this.isTrialExpired(s) ? html`<div class="alert alert-warning" style="margin-top:var(--mc-space-3);"><ion-icon name="hourglass-outline"></ion-icon> Tu prueba de 21 días terminó. Elige un plan para seguir usando BikerOS.</div>` : ''}
                                     </div>
                                 `;
                         }}
