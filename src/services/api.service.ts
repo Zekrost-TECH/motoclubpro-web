@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, EventGuest, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle, SosAlert, ClubRideRole, ClubLimits } from '../types';
+import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, EventGuest, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle, SosAlert, ClubRideRole, ClubLimits, Plan, WidgetCheckoutConfig } from '../types';
 import { router } from '../router';
 
 const BASE_URL = (import.meta as any).env.VITE_WEB_API_URL || 'http://localhost:3000/api/v1';
@@ -466,8 +466,31 @@ export const api = {
     billing: {
         subscription: () => request<Subscription>('/billing/subscription'),
         payments: () => request<Payment[]>('/billing/payments'),
+        acceptanceToken: () =>
+            request<{ acceptanceToken: string; publicKey: string; baseUrl: string; dryRun: boolean }>('/billing/acceptance-token'),
+        checkout: (planId: string, billingCycle: 'monthly' | 'yearly') =>
+            request<WidgetCheckoutConfig>('/billing/checkout', {
+                method: 'POST',
+                body: JSON.stringify({ planId, billingCycle }),
+            }),
+        paymentSources: {
+            create: (data: { type: 'CARD' | 'NEQUI'; token: string; customerEmail?: string; customerData?: { fullName?: string; phoneNumber?: string; legalId?: string; legalIdType?: string } }) =>
+                request<{ sourceId: string; type: string; status: string; last4?: string | null }>('/billing/payment-sources', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                }),
+            remove: () => request<{ ok: boolean }>('/billing/payment-source', { method: 'DELETE' }),
+        },
+        changeSubscription: (data: { planId?: string; billingCycle?: 'monthly' | 'yearly' }) =>
+            request<any>('/billing/subscription', { method: 'PATCH', body: JSON.stringify(data) }),
+        cancelSubscription: (reason?: string) =>
+            request<{ ok: boolean }>('/billing/subscription/cancel', {
+                method: 'POST',
+                body: JSON.stringify({ reason: reason ?? null }),
+            }),
     },
     plans: {
+        list: () => request<Plan[]>('/plans'),
         limits: () => request<any>('/plans/limits').then((data) => ({
             planId: data.plan_id ?? data.planId,
             planName: data.plan_name ?? data.planName,

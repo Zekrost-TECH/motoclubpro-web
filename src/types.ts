@@ -192,13 +192,45 @@ export interface ClubLimits {
 }
 
 export interface Subscription {
+    hasSubscription: boolean;
     planId: string;
+    plan: string;
     planName: string;
-    status: 'trial' | 'active' | 'past_due' | 'canceled' | 'suspended';
-    startDate: string;
-    endDate: string;
+    status: 'trial' | 'active' | 'past_due' | 'canceled' | 'suspended' | 'sin_suscripcion';
+    startDate: string | null;
+    endDate: string | null;
     memberLimit: number;
     currentMembers: number;
+    price: number;
+    priceYearly: number;
+    billingCycle: 'monthly' | 'yearly';
+    currency: string;
+    cancelAtPeriodEnd: boolean;
+    retryCount: number;
+    hasPaymentSource: boolean;
+    paymentMethodLast4?: string | null;
+}
+
+export interface Plan {
+    id: string;
+    name: string;
+    description: string | null;
+    price_monthly_cents: number;
+    price_yearly_cents: number | null;
+    max_members: number;
+    max_events_month: number;
+    overage_member_cents: number;
+    features: Record<string, boolean>;
+}
+
+export interface WidgetCheckoutConfig {
+    publicKey: string;
+    currency: 'COP';
+    amountInCents: number;
+    reference: string;
+    signature: { integrity: string };
+    customerData: { email: string };
+    redirectUrl?: string;
 }
 
 export interface Payment {

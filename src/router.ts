@@ -21,6 +21,7 @@ import { SupportPointsPage } from './pages/support/SupportPointsPage';
 import { SupportPointDetailPage } from './pages/support/SupportPointDetailPage';
 import { SosPage } from './pages/sos/SosPage';
 import { BillingPage } from './pages/billing/BillingPage';
+import { PaymentResultPage } from './pages/billing/PaymentResultPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { RideRolesPage } from './pages/settings/RideRolesPage';
@@ -50,6 +51,7 @@ export const router = createRouter([
             { path: '/support/:id/edit', component: () => new SupportPointDetailPage() },
             { path: '/sos', component: () => new SosPage() },
             { path: '/billing', component: () => new BillingPage() },
+            { path: '/billing/result', component: () => new PaymentResultPage() },
             { path: '/reports', component: () => new ReportsPage() },
             { path: '/settings', component: () => new SettingsPage() },
             { path: '/ride-roles', component: () => new RideRolesPage() },
