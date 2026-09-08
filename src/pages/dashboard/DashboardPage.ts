@@ -116,7 +116,7 @@ export class DashboardPage extends NixComponent {
                                 <ion-icon name="people-outline"></ion-icon>
                             </div>
                             <div class="kpi-info">
-                                <span class="kpi-value">${this.membersQuery.data.value?.length || 0}</span>
+                                <span class="kpi-value">${() => this.membersQuery.data.value?.length || 0}</span>
                                 <span class="kpi-label">Miembros</span>
                             </div>
                         </div>
@@ -125,7 +125,7 @@ export class DashboardPage extends NixComponent {
                                 <ion-icon name="calendar-outline"></ion-icon>
                             </div>
                             <div class="kpi-info">
-                                <span class="kpi-value">${this.eventsQuery.data.value?.length || 0}</span>
+                                <span class="kpi-value">${() => this.eventsQuery.data.value?.length || 0}</span>
                                 <span class="kpi-label">Rodadas</span>
                             </div>
                         </div>
@@ -134,7 +134,7 @@ export class DashboardPage extends NixComponent {
                                 <ion-icon name="map-outline"></ion-icon>
                             </div>
                             <div class="kpi-info">
-                                <span class="kpi-value">${this.routesQuery.data.value?.length || 0}</span>
+                                <span class="kpi-value">${() => this.routesQuery.data.value?.length || 0}</span>
                                 <span class="kpi-label">Rutas</span>
                             </div>
                         </div>
@@ -143,7 +143,7 @@ export class DashboardPage extends NixComponent {
                                 <ion-icon name="warning-outline"></ion-icon>
                             </div>
                             <div class="kpi-info">
-                                <span class="kpi-value">${this.sosAlertsQuery.data.value?.length || 0}</span>
+                                <span class="kpi-value">${() => this.sosAlertsQuery.data.value?.length || 0}</span>
                                 <span class="kpi-label">SOS Activas</span>
                             </div>
                         </div>

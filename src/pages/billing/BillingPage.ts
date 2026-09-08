@@ -403,8 +403,8 @@ export class BillingPage extends NixComponent {
                         <div class="card-header"><h3><ion-icon name="wallet-outline"></ion-icon> Método de Pago</h3></div>
                         <div class="card-body">
                             <div style="display:flex;gap:var(--mc-space-2);margin-bottom:var(--mc-space-3);">
-                                <button class="btn btn-${() => this.pmType.value === 'CARD' ? 'primary' : 'secondary'}" @click=${() => this.pmType.update(() => 'CARD')}>Tarjeta</button>
-                                <button class="btn btn-${() => this.pmType.value === 'NEQUI' ? 'primary' : 'secondary'}" @click=${() => this.pmType.update(() => 'NEQUI')}>Nequi</button>
+                                <button class=${() => this.pmType.value === 'CARD' ? 'btn btn-primary' : 'btn btn-secondary'} @click=${() => this.pmType.update(() => 'CARD')}>Tarjeta</button>
+                                <button class=${() => this.pmType.value === 'NEQUI' ? 'btn btn-primary' : 'btn btn-secondary'} @click=${() => this.pmType.update(() => 'NEQUI')}>Nequi</button>
                             </div>
                             ${() => this.pmType.value === 'CARD' ? html`
                                 <div class="form-grid">

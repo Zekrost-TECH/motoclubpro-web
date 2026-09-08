@@ -25,12 +25,12 @@ function cspPlugin() {
 
       const csp = [
         "default-src 'self'",
-        `connect-src 'self' ${apiOrigin} https://cloudflareinsights.com https://challenges.cloudflare.com https://maps.googleapis.com https://maps.gstatic.com`,
-        "script-src 'self' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://maps.googleapis.com",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.cdnfonts.com",
+        `connect-src 'self' ${apiOrigin} https://cloudflareinsights.com https://challenges.cloudflare.com https://maps.googleapis.com https://maps.gstatic.com https://production.wompi.co https://sandbox.wompi.co https://checkout.wompi.co`,
+        "script-src 'self' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://maps.googleapis.com https://checkout.wompi.co",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.cdnfonts.com https://checkout.wompi.co",
         "font-src 'self' https://fonts.gstatic.com https://fonts.cdnfonts.com",
-        "img-src 'self' data: https://maps.googleapis.com https://maps.gstatic.com",
-        "frame-src https://challenges.cloudflare.com",
+        "img-src 'self' data: https://maps.googleapis.com https://maps.gstatic.com https://checkout.wompi.co",
+        "frame-src https://challenges.cloudflare.com https://checkout.wompi.co",
         "worker-src 'self' blob:",
         "object-src 'none'",
         "base-uri 'self'",
