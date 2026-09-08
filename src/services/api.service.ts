@@ -8,7 +8,9 @@ let _accessToken: string | null = localStorage.getItem('mcp_access_token');
 let _activeClubId: string | null = localStorage.getItem('mcp_active_club');
 
 function handleAuthError(status: number): void {
-    if (status === 401 || status === 403) {
+    // Solo 401 cierra sesión. Un 403 significa "autenticado pero sin permiso":
+    // desloguear por un 403 borraba la sesión ante cualquier endpoint restringido.
+    if (status === 401) {
         localStorage.removeItem('mcp_access_token');
         localStorage.removeItem('mcp_refresh_token');
         localStorage.removeItem('mcp_active_club');
@@ -18,37 +20,38 @@ function handleAuthError(status: number): void {
     }
 }
 
-function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-    const url = `${BASE_URL}${path}`;
-    const headers: Record<string, string> = {
-        ...(options.headers as Record<string, string> || {}),
-    };
-    if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
-        headers['Content-Type'] = 'application/json';
+// Refresh silencioso: una sola promesa en vuelo para que N respuestas 401
+// concurrentes no disparen refreshes paralelos.
+let _refreshPromise: Promise<boolean> | null = null;
+
+function refreshTokens(): Promise<boolean> {
+    if (!_refreshPromise) {
+        _refreshPromise = (async () => {
+            try {
+                const rt = localStorage.getItem('mcp_refresh_token');
+                if (!rt) return false;
+                const r = await fetch(`${BASE_URL}/auth/refresh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: rt }),
+                });
+                if (!r.ok) return false;
+                const data = await r.json();
+                setTokens(data.access_token, data.refresh_token);
+                return true;
+            } catch {
+                return false;
+            } finally {
+                _refreshPromise = null;
+            }
+        })();
     }
-    if (_accessToken) {
-        headers['Authorization'] = `Bearer ${_accessToken}`;
-    }
-    if (_activeClubId) {
-        headers['X-Club-ID'] = _activeClubId;
-    }
-    return fetch(url, { ...options, headers }).then(async (r) => {
-        if (!r.ok) {
-            handleAuthError(r.status);
-            const err = await r.json().catch(() => ({}));
-            throw new Error(err.message || `HTTP ${r.status}`);
-        }
-        if (r.status === 204) return undefined as T;
-        const body = await r.json();
-        // Backend devuelve paginación { data, meta }. Si la respuesta tiene esa forma, devolvemos data.
-        if (body && typeof body === 'object' && 'data' in body && 'meta' in body && body.meta && typeof body.meta === 'object' && 'totalPages' in body.meta) {
-            return body.data as T;
-        }
-        return body as T;
-    });
+    return _refreshPromise;
 }
 
-function requestRaw<T>(path: string, options: RequestInit = {}): Promise<T> {
+// Fetch con token + refresh silencioso: si el access token expiró (401),
+// refresca una vez y reintenta; si el refresh también falla, desloguea.
+async function fetchAuthorized(path: string, options: RequestInit, retried: boolean): Promise<Response> {
     const url = `${BASE_URL}${path}`;
     const headers: Record<string, string> = {
         ...(options.headers as Record<string, string> || {}),
@@ -62,15 +65,38 @@ function requestRaw<T>(path: string, options: RequestInit = {}): Promise<T> {
     if (_activeClubId) {
         headers['X-Club-ID'] = _activeClubId;
     }
-    return fetch(url, { ...options, headers }).then(async (r) => {
-        if (!r.ok) {
-            handleAuthError(r.status);
-            const err = await r.json().catch(() => ({}));
-            throw new Error(err.message || `HTTP ${r.status}`);
-        }
-        if (r.status === 204) return undefined as T;
-        return await r.json() as T;
-    });
+    const r = await fetch(url, { ...options, headers });
+    if (r.status === 401 && !retried) {
+        const refreshed = await refreshTokens();
+        if (refreshed) return fetchAuthorized(path, options, true);
+        handleAuthError(r.status);
+    }
+    return r;
+}
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+    const r = await fetchAuthorized(path, options, false);
+    if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${r.status}`);
+    }
+    if (r.status === 204) return undefined as T;
+    const body = await r.json();
+    // Backend devuelve paginación { data, meta }. Si la respuesta tiene esa forma, devolvemos data.
+    if (body && typeof body === 'object' && 'data' in body && 'meta' in body && body.meta && typeof body.meta === 'object' && 'totalPages' in body.meta) {
+        return body.data as T;
+    }
+    return body as T;
+}
+
+async function requestRaw<T>(path: string, options: RequestInit = {}): Promise<T> {
+    const r = await fetchAuthorized(path, options, false);
+    if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${r.status}`);
+    }
+    if (r.status === 204) return undefined as T;
+    return await r.json() as T;
 }
 
 export function setTokens(access: string, refresh: string): void {

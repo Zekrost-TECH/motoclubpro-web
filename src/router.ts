@@ -1,5 +1,6 @@
 import { createRouter } from '@deijose/nix-js';
 import { authStore } from './stores/auth.store';
+import { clubsStore } from './stores/clubs.store';
 import { routerPath } from './stores/router.store';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/auth/LoginPage';
@@ -66,9 +67,16 @@ export const router = createRouter([
 router.beforeEach((to) => {
     routerPath.update(() => to);
     const user = authStore.currentUser.value;
-    if (to === '/login' && user) return '/';
+    if (to === '/login' && user) return '/dashboard';
     if (to !== '/login' && to !== '/select-club' && !user) return '/login';
-    if (to.startsWith('/admin') && user?.role !== 'superadmin') return '/';
+    // '/' no tiene ruta hija por defecto: sin esto el AppLayout se ve en blanco
+    if (to === '/') return '/dashboard';
+    if (to.startsWith('/admin') && user?.role !== 'superadmin') return '/dashboard';
+    // Las rutas del panel envían X-Club-ID: sin club activo las peticiones fallan.
+    // Superadmin se excluye porque gestiona clubs desde /admin/clubs sin club propio.
+    if (user && user.role !== 'superadmin' && to !== '/select-club' && !clubsStore.activeClub.value) {
+        return '/select-club';
+    }
     return undefined;
 });
 
