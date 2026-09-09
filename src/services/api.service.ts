@@ -344,6 +344,13 @@ export const api = {
                 method: 'POST',
                 body: JSON.stringify({ club_id: clubId }),
             }),
+        logout: () => {
+            const rt = localStorage.getItem('mcp_refresh_token');
+            return request<{ message: string }>('/auth/logout', {
+                method: 'POST',
+                body: JSON.stringify({ refresh_token: rt }),
+            });
+        },
     },
     users: {
         list: () => request<User[]>('/users'),

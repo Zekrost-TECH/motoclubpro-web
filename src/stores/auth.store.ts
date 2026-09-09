@@ -41,6 +41,11 @@ export async function refreshSession(): Promise<boolean> {
 }
 
 export async function logout(): Promise<void> {
+    try {
+        await api.auth.logout();
+    } catch {
+        // Silencioso: limpiamos localmente igual
+    }
     clearTokens();
     authStore.currentUser.update(() => null);
 }
