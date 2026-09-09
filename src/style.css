@@ -1926,3 +1926,33 @@ select.input {
   font-size: var(--mc-text-sm);
   color: var(--mc-text-primary);
 }
+
+/* ── Reduced motion: desactivar animaciones para usuarios con vestibular issues ── */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Skeleton: sin pulse, gris estático */
+  .skeleton {
+    animation: none !important;
+  }
+
+  /* Toasts: sin slide ni pulse */
+  .toast,
+  .toast-error {
+    animation: none !important;
+  }
+
+  /* SOS: sin glow ni pulse */
+  .sos-active,
+  .sos-badge {
+    animation: none !important;
+  }
+}

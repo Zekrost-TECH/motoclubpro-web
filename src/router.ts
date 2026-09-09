@@ -1,4 +1,4 @@
-import { createRouter } from '@elurjs/core';
+import { createRouter, lazy } from '@elurjs/core';
 import { authStore } from './stores/auth.store';
 import { clubsStore } from './stores/clubs.store';
 import { routerPath } from './stores/router.store';
@@ -7,26 +7,28 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { ClubSelectorPage } from './pages/clubs/ClubSelectorPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { EventsListPage } from './pages/events/EventsListPage';
-import { EventCreatePage } from './pages/events/EventCreatePage';
 import { EventDetailPage } from './pages/events/EventDetailPage';
-import { EventEditPage } from './pages/events/EventEditPage';
 import { EventGuestsPage } from './pages/events/EventGuestsPage';
 import { RoutesListPage } from './pages/routes/RoutesListPage';
-import { RouteCreatePage } from './pages/routes/RouteCreatePage';
-import { RouteDetailPage } from './pages/routes/RouteDetailPage';
-import { RouteEditPage } from './pages/routes/RouteEditPage';
 import { MembersListPage } from './pages/members/MembersListPage';
 import { MemberInvitePage } from './pages/members/MemberInvitePage';
 import { MemberProfilePage } from './pages/members/MemberProfilePage';
 import { SupportPointsPage } from './pages/support/SupportPointsPage';
-import { SupportPointDetailPage } from './pages/support/SupportPointDetailPage';
-import { SosPage } from './pages/sos/SosPage';
 import { BillingPage } from './pages/billing/BillingPage';
 import { PaymentResultPage } from './pages/billing/PaymentResultPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { RideRolesPage } from './pages/settings/RideRolesPage';
 import { AdminClubsPage } from './pages/admin/AdminClubsPage';
+
+// Páginas pesadas (con Google Maps): lazy-load para reducir el bundle inicial
+const EventCreatePage = lazy(() => import('./pages/events/EventCreatePage').then(m => m.EventCreatePage) as any);
+const EventEditPage = lazy(() => import('./pages/events/EventEditPage').then(m => m.EventEditPage) as any);
+const RouteCreatePage = lazy(() => import('./pages/routes/RouteCreatePage').then(m => m.RouteCreatePage) as any);
+const RouteDetailPage = lazy(() => import('./pages/routes/RouteDetailPage').then(m => m.RouteDetailPage) as any);
+const RouteEditPage = lazy(() => import('./pages/routes/RouteEditPage').then(m => m.RouteEditPage) as any);
+const SupportPointDetailPage = lazy(() => import('./pages/support/SupportPointDetailPage').then(m => m.SupportPointDetailPage) as any);
+const SosPage = lazy(() => import('./pages/sos/SosPage').then(m => m.SosPage) as any);
 
 export const router = createRouter([
     {
@@ -35,22 +37,22 @@ export const router = createRouter([
         children: [
             { path: '/dashboard', component: () => new DashboardPage() },
             { path: '/events', component: () => new EventsListPage() },
-            { path: '/events/create', component: () => new EventCreatePage() },
+            { path: '/events/create', component: EventCreatePage },
             { path: '/events/:id', component: () => new EventDetailPage() },
-            { path: '/events/:id/edit', component: () => new EventEditPage() },
+            { path: '/events/:id/edit', component: EventEditPage },
             { path: '/events/:id/guests', component: () => new EventGuestsPage() },
             { path: '/routes', component: () => new RoutesListPage() },
-            { path: '/routes/create', component: () => new RouteCreatePage() },
-            { path: '/routes/:id', component: () => new RouteDetailPage() },
-            { path: '/routes/:id/edit', component: () => new RouteEditPage() },
+            { path: '/routes/create', component: RouteCreatePage },
+            { path: '/routes/:id', component: RouteDetailPage },
+            { path: '/routes/:id/edit', component: RouteEditPage },
             { path: '/members', component: () => new MembersListPage() },
             { path: '/members/invite', component: () => new MemberInvitePage() },
             { path: '/members/:id', component: () => new MemberProfilePage() },
             { path: '/support', component: () => new SupportPointsPage() },
-            { path: '/support/create', component: () => new SupportPointDetailPage() },
-            { path: '/support/:id', component: () => new SupportPointDetailPage() },
-            { path: '/support/:id/edit', component: () => new SupportPointDetailPage() },
-            { path: '/sos', component: () => new SosPage() },
+            { path: '/support/create', component: SupportPointDetailPage },
+            { path: '/support/:id', component: SupportPointDetailPage },
+            { path: '/support/:id/edit', component: SupportPointDetailPage },
+            { path: '/sos', component: SosPage },
             { path: '/billing', component: () => new BillingPage() },
             { path: '/billing/result', component: () => new PaymentResultPage() },
             { path: '/reports', component: () => new ReportsPage() },
