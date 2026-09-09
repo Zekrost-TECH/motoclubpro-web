@@ -1,6 +1,6 @@
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
-import { html, NixComponent, signal, createForm, required, email as emailValidator, ref } from '@deijose/nix-js';
+import { html, ElurComponent, signal, createForm, required, email as emailValidator, ref } from '@elurjs/core';
 import { login, authStore, logout } from '../../stores/auth.store';
 import { loadClubs, clubsStore } from '../../stores/clubs.store';
 import { PRIVACY_POLICY_URL } from '../../config/urls';
@@ -12,7 +12,7 @@ import {
 } from '../../services/turnstile.service';
 import { themeStore } from '../../stores/theme.store';
 
-export class LoginPage extends NixComponent {
+export class LoginPage extends ElurComponent {
     private router = router;
     form = createForm(
         { email: '', password: '' },
@@ -61,6 +61,10 @@ export class LoginPage extends NixComponent {
             }
         };
         tryRender();
+    }
+
+    onUnmount() {
+        this.form.dispose();
     }
 
     async handleSubmit(values: { email: string; password: string }) {

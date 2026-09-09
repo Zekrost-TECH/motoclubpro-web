@@ -1,5 +1,5 @@
-import { createStore, html } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { createStore, html } from '@elurjs/core';
+import type { ElurTemplate } from '@elurjs/core';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -30,7 +30,7 @@ function toastIcon(type: ToastType): string {
     }
 }
 
-export function ToastContainer(): NixTemplate {
+export function ToastContainer(): ElurTemplate {
     return html`
         <div class="toast-container">
             ${() => toastStore.items.value.map(t => html`

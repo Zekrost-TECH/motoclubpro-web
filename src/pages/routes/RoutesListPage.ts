@@ -1,6 +1,6 @@
 import { router } from '../../router';
-import { html, NixComponent, repeat } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { html, ElurComponent, repeat } from '@elurjs/core';
+import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { openConfirm } from '../../components/ConfirmModal';
 import { SkeletonCard } from '../../components/Skeleton';
@@ -11,7 +11,7 @@ import type { Route } from '../../types';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
 
-export class RoutesListPage extends NixComponent {
+export class RoutesListPage extends ElurComponent {
     search = createDebounced('', 300);
     private router = router;
 
@@ -38,6 +38,11 @@ export class RoutesListPage extends NixComponent {
         if (!hasFeature('route_library')) {
             this.router.navigate('/dashboard');
         }
+    }
+
+    onUnmount() {
+        this.routesQuery.dispose();
+        this.deleteRoute.dispose();
     }
 
     filtered(): Route[] {

@@ -1,5 +1,5 @@
-import { html } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { html } from '@elurjs/core';
+import type { ElurTemplate } from '@elurjs/core';
 import { router } from '../../router';
 import { currentUser, logout } from '../../stores/auth.store';
 import { activeClub } from '../../stores/clubs.store';
@@ -35,7 +35,7 @@ function isActiveRoute(path: string, current: string): boolean {
     return current === path || current.startsWith(path + '/');
 }
 
-export function Sidebar(): NixTemplate {
+export function Sidebar(): ElurTemplate {
     const user = currentUser.value;
 
     return html`

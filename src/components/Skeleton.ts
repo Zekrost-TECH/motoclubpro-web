@@ -1,7 +1,7 @@
-import { html } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { html } from '@elurjs/core';
+import type { ElurTemplate } from '@elurjs/core';
 
-export function SkeletonCard(): NixTemplate {
+export function SkeletonCard(): ElurTemplate {
     return html`
         <div class="skeleton-card">
             <div class="skeleton skeleton-title"></div>
@@ -11,7 +11,7 @@ export function SkeletonCard(): NixTemplate {
     `;
 }
 
-export function SkeletonTable(rows: number = 5): NixTemplate {
+export function SkeletonTable(rows: number = 5): ElurTemplate {
     return html`
         <div class="skeleton-wrapper">
             <div class="skeleton skeleton-title" style="width:100%;margin-bottom:0.75rem;"></div>
@@ -20,7 +20,7 @@ export function SkeletonTable(rows: number = 5): NixTemplate {
     `;
 }
 
-export function SkeletonKpi(): NixTemplate {
+export function SkeletonKpi(): ElurTemplate {
     return html`
         <div class="kpi-card">
             <div class="skeleton" style="width:48px;height:48px;border-radius:50%;"></div>

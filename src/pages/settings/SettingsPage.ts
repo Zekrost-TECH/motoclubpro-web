@@ -1,5 +1,5 @@
-import { html, NixComponent, createForm, required, effect } from '@deijose/nix-js';
-import { createQuery, createCommand, setQueryData } from '@deijose/nix-query';
+import { html, ElurComponent, createForm, required, effect } from '@elurjs/core';
+import { createQuery, createCommand, setQueryData } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
@@ -8,7 +8,7 @@ import { SkeletonCard } from '../../components/Skeleton';
 import { themeStore } from '../../stores/theme.store';
 import { PRIVACY_POLICY_URL } from '../../config/urls';
 
-export class SettingsPage extends NixComponent {
+export class SettingsPage extends ElurComponent {
     form = createForm(
         { name: '', city: '', department: '', description: '' },
         {
@@ -77,6 +77,12 @@ export class SettingsPage extends NixComponent {
             this.fillForm(data);
             this._formLoaded = true;
         }
+    }
+
+    onUnmount() {
+        this.clubQuery.dispose();
+        this.updateClub.dispose();
+        this.form.dispose();
     }
 
     async handleSubmit(values: { name: string; city: string; department: string; description: string }) {

@@ -1,13 +1,13 @@
 import { router } from '../../router';
-import { html, NixComponent, repeat } from '@deijose/nix-js';
-import { createQuery } from '@deijose/nix-query';
+import { html, ElurComponent, repeat } from '@elurjs/core';
+import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import type { Route, Waypoint } from '../../types';
 import { MapView } from '../../components/MapView';
 import { formatEnum } from '../../utils/labels';
 import { setPageTitle } from '../../stores/router.store';
 
-export class RouteDetailPage extends NixComponent {
+export class RouteDetailPage extends ElurComponent {
     private router = router;
     private routeId = this.router.params.value?.id || '';
 
@@ -37,6 +37,11 @@ export class RouteDetailPage extends NixComponent {
 
     onMount() {
         setPageTitle('Detalle de Ruta');
+    }
+
+    onUnmount() {
+        this.routeQuery.dispose();
+        this.waypointsQuery.dispose();
     }
 
     get route() { return this.routeQuery.data.value as Route | null; }

@@ -1,6 +1,6 @@
 import { router } from '../../router';
-import { html, signal, NixComponent, createForm, repeat } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { html, signal, ElurComponent, createForm, repeat } from '@elurjs/core';
+import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import type { Event, EventGuest, GuestType } from '../../types';
 import { showToast } from '../../components/Toast';
@@ -10,7 +10,7 @@ import { authStore } from '../../stores/auth.store';
 import { formatEnum } from '../../utils/labels';
 import { formatLocalDate } from '../../utils/date';
 
-export class EventGuestsPage extends NixComponent {
+export class EventGuestsPage extends ElurComponent {
     private router = router;
     private eventId = this.router.params.value?.id || '';
     editingGuest = signal<EventGuest | null>(null);
@@ -94,6 +94,11 @@ export class EventGuestsPage extends NixComponent {
 
     onUnmount() {
         this.guestForm.dispose();
+        this.eventQuery.dispose();
+        this.guestsQuery.dispose();
+        this.addGuest.dispose();
+        this.removeGuest.dispose();
+        this.updateGuest.dispose();
     }
 
     get event() { return this.eventQuery.data.value as Event | null; }
@@ -221,9 +226,9 @@ export class EventGuestsPage extends NixComponent {
                         <thead><tr><th>Nombre</th><th>Tipo</th><th>Teléfono</th><th>Notas</th><th>Invitado por</th><th></th></tr></thead>
                         <tbody>
                             ${() => {
-                                const list = this.guests;
-                                if (!list.length) return html`<tr><td colspan="6" class="empty">Sin invitados registrados.</td></tr>`;
-                                return repeat(list, (g: EventGuest) => g.id, (g: EventGuest) => html`
+                const list = this.guests;
+                if (!list.length) return html`<tr><td colspan="6" class="empty">Sin invitados registrados.</td></tr>`;
+                return repeat(list, (g: EventGuest) => g.id, (g: EventGuest) => html`
                                     <tr>
                                         <td><strong>${g.fullName}</strong></td>
                                         <td><span class=${`badge ${this.guestTypeBadge(g.guestType)}`}>${formatEnum(g.guestType)}</span></td>
@@ -244,7 +249,7 @@ export class EventGuestsPage extends NixComponent {
                                         </td>
                                     </tr>
                                 `);
-                            }}
+            }}
                         </tbody>
                     </table>
                 </div>

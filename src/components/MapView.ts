@@ -1,4 +1,4 @@
-import { NixComponent, html, ref } from '@deijose/nix-js';
+import { ElurComponent, html, ref } from '@elurjs/core';
 import { loadGoogleMaps } from '../services/maps';
 
 declare const google: any;
@@ -9,7 +9,7 @@ interface Waypoint {
     name: string;
 }
 
-export class MapView extends NixComponent {
+export class MapView extends ElurComponent {
     private _waypoints: Waypoint[];
     private _mapContainer = ref<HTMLDivElement>();
     private _map: any = null;
@@ -56,6 +56,18 @@ export class MapView extends NixComponent {
         }).catch(() => {
             // Map fails silently if API key is missing
         });
+    }
+
+    onUnmount() {
+        if (this._map) {
+            // google.maps.event.clearInstanceListeners limpia todos los listeners
+            // del mapa y sus objetos (markers, polyline).
+            const maps = (window as any).google?.maps;
+            if (maps?.event?.clearInstanceListeners) {
+                maps.event.clearInstanceListeners(this._map);
+            }
+            this._map = null;
+        }
     }
 
     render() {

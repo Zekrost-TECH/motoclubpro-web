@@ -1,7 +1,7 @@
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
-import { html, signal, NixComponent, repeat } from '@deijose/nix-js';
-import { createQuery, createCommand, updateQueryData } from '@deijose/nix-query';
+import { html, signal, ElurComponent, repeat } from '@elurjs/core';
+import { createQuery, createCommand, updateQueryData } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { SkeletonTable } from '../../components/Skeleton';
 import { FeatureLocked } from '../../components/FeatureLocked';
@@ -9,7 +9,7 @@ import { formatEnum } from '../../utils/labels';
 import { hasFeature } from '../../stores/plans.store';
 import type { SupportPoint } from '../../types';
 
-export class SupportPointsPage extends NixComponent {
+export class SupportPointsPage extends ElurComponent {
     private router = router;
     typeFilter = signal('');
     verifyingId = signal('');

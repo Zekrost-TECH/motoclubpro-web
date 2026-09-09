@@ -1,4 +1,4 @@
-import { html, mount, RouterView, effect } from '@deijose/nix-js';
+import { html, mount, RouterView, effect } from '@elurjs/core';
 // Registra el custom element <ion-icon> y SOLO los iconos usados en la app.
 // ionicons v8 ya no auto-registra el componente ni trae los iconos incluidos:
 // hay que definir el custom element y registrar los iconos con addIcons.

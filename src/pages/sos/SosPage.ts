@@ -1,5 +1,5 @@
-import { html, NixComponent, signal, repeat } from '@deijose/nix-js';
-import { createQuery, createCommand, updateQueryData } from '@deijose/nix-query';
+import { html, ElurComponent, signal, repeat } from '@elurjs/core';
+import { createQuery, createCommand, updateQueryData } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { setPageTitle } from '../../stores/router.store';
 import { SkeletonTable } from '../../components/Skeleton';
@@ -11,7 +11,7 @@ import { hasFeature } from '../../stores/plans.store';
 import { activeClub } from '../../stores/clubs.store';
 import type { SosAlert, SosStatus } from '../../types';
 
-export class SosPage extends NixComponent {
+export class SosPage extends ElurComponent {
     statusFilter = signal<'all' | SosStatus>('all');
     page = signal(1);
     pageSize = signal(10);
@@ -63,6 +63,11 @@ export class SosPage extends NixComponent {
 
     onMount() {
         setPageTitle('Alertas SOS');
+    }
+
+    onUnmount() {
+        this.sosQuery.dispose();
+        this.resolveSos.dispose();
     }
 
     filtered() {

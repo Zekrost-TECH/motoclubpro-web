@@ -1,4 +1,4 @@
-import { NixComponent, html, ref } from '@deijose/nix-js';
+import { ElurComponent, html, ref } from '@elurjs/core';
 import { loadGoogleMaps } from '../services/maps';
 
 declare const google: any;
@@ -12,7 +12,7 @@ export interface RouteWaypoint {
     sortOrder?: number;
 }
 
-export class RouteMapEditor extends NixComponent {
+export class RouteMapEditor extends ElurComponent {
     private _mapContainer = ref<HTMLDivElement>();
     private _map: any = null;
     private _markers: any[] = [];
@@ -124,6 +124,32 @@ export class RouteMapEditor extends NixComponent {
         }).catch(() => {
             // Map fails silently
         });
+    }
+
+    onUnmount() {
+        const maps = (window as any).google?.maps;
+        this._markers.forEach((m) => {
+            if (maps?.event?.clearInstanceListeners) {
+                maps.event.clearInstanceListeners(m);
+            }
+            m.setMap(null);
+        });
+        this._markers = [];
+        if (this._pendingMarker) {
+            if (maps?.event?.clearInstanceListeners) {
+                maps.event.clearInstanceListeners(this._pendingMarker);
+            }
+            this._pendingMarker.setMap(null);
+            this._pendingMarker = null;
+        }
+        if (this._polyline) {
+            this._polyline.setMap(null);
+            this._polyline = null;
+        }
+        if (this._map && maps?.event?.clearInstanceListeners) {
+            maps.event.clearInstanceListeners(this._map);
+        }
+        this._map = null;
     }
 
     /** Render devuelve solo el contenedor del mapa. Nunca se re-renderiza. */

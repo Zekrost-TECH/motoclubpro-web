@@ -1,6 +1,6 @@
 import { router } from '../../router';
-import { html, signal, NixComponent } from '@deijose/nix-js';
-import { createCommand, invalidateQueries } from '@deijose/nix-query';
+import { html, signal, ElurComponent } from '@elurjs/core';
+import { createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import { RouteMapEditor } from '../../components/RouteMapEditor';
@@ -8,7 +8,7 @@ import { setPageTitle } from '../../stores/router.store';
 import { hasFeature } from '../../stores/plans.store';
 import type { Route } from '../../types';
 
-export class RouteCreatePage extends NixComponent {
+export class RouteCreatePage extends ElurComponent {
     name = signal('');
     description = signal('');
     difficulty = signal('suave');

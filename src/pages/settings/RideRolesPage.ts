@@ -1,5 +1,5 @@
-import { html, NixComponent, mount } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { html, ElurComponent, mount } from '@elurjs/core';
+import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { setPageTitle } from '../../stores/router.store';
 import { showToast } from '../../components/Toast';
@@ -7,7 +7,7 @@ import { openConfirm } from '../../components/ConfirmModal';
 import { RideRoleModal } from '../../components/RideRoleModal';
 import type { ClubRideRole } from '../../types';
 
-export class RideRolesPage extends NixComponent {
+export class RideRolesPage extends ElurComponent {
     private portalRoot: HTMLElement | null = null;
 
     rolesQuery = createQuery(

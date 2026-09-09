@@ -1,10 +1,10 @@
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
-import { html, NixComponent } from '@deijose/nix-js';
+import { html, ElurComponent } from '@elurjs/core';
 import { myClubs, switchClub } from '../../stores/clubs.store';
 import { themeStore } from '../../stores/theme.store';
 
-export class ClubSelectorPage extends NixComponent {
+export class ClubSelectorPage extends ElurComponent {
     private router = router;
 
     onMount() {

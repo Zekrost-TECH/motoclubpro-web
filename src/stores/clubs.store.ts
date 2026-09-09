@@ -1,7 +1,7 @@
-import { createStore } from '@deijose/nix-js';
+import { createStore } from '@elurjs/core';
 import { api, setActiveClub, setTokens } from '../services/api.service';
 import type { Club } from '../types';
-import { setQueryData, invalidateQueries } from '@deijose/nix-query';
+import { setQueryData, invalidateQueries } from '@elurjs/query';
 
 export const clubsStore = createStore({
     myClubs: [] as Club[],

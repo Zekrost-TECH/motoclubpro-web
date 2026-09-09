@@ -1,6 +1,6 @@
 import { router } from '../../router';
-import { html, NixComponent } from '@deijose/nix-js';
-import { createQuery } from '@deijose/nix-query';
+import { html, ElurComponent } from '@elurjs/core';
+import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { SkeletonKpi } from '../../components/Skeleton';
 import { activeClub } from '../../stores/clubs.store';
@@ -13,7 +13,7 @@ const now = new Date();
 const reportFrom = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
 const reportTo = now.toISOString().split('T')[0];
 
-export class DashboardPage extends NixComponent {
+export class DashboardPage extends ElurComponent {
     private router = router;
 
     upcomingEventsQuery = createQuery(
@@ -67,6 +67,15 @@ export class DashboardPage extends NixComponent {
 
     onMount() {
         setPageTitle('Dashboard');
+    }
+
+    onUnmount() {
+        this.upcomingEventsQuery.dispose();
+        this.membersQuery.dispose();
+        this.eventsQuery.dispose();
+        this.sosAlertsQuery.dispose();
+        this.eventsReportQuery.dispose();
+        this.routesQuery.dispose();
     }
 
     isLoading() {

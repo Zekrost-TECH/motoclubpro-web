@@ -1,5 +1,5 @@
-import { html, signal, NixComponent, effect, repeat } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { html, signal, ElurComponent, effect, repeat } from '@elurjs/core';
+import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
@@ -14,7 +14,7 @@ declare global {
     }
 }
 
-export class BillingPage extends NixComponent {
+export class BillingPage extends ElurComponent {
     nit = signal('');
     billingAddress = signal('');
     billingPhone = signal('');
@@ -22,6 +22,8 @@ export class BillingPage extends NixComponent {
     billingContactEmail = signal('');
     taxRegime = signal('');
     private _formLoaded = false;
+    private _effect1: (() => void) | null = null;
+    private _effect2: (() => void) | null = null;
 
     // Checkout / plan
     selectedPlanId = signal('');
@@ -70,14 +72,14 @@ export class BillingPage extends NixComponent {
     );
 
     onInit() {
-        effect(() => {
+        this._effect1 = effect(() => {
             const data = this.clubBillingQuery.data.value;
             if (data && !this._formLoaded) {
                 this.fillForm(data);
                 this._formLoaded = true;
             }
         });
-        effect(() => {
+        this._effect2 = effect(() => {
             const plans = this.plansQuery.data.value;
             if (plans?.length && !this.selectedPlanId.value) {
                 const sub = this.subscriptionQuery.data.value;
@@ -96,6 +98,16 @@ export class BillingPage extends NixComponent {
             this.fillForm(data);
             this._formLoaded = true;
         }
+    }
+
+    onUnmount() {
+        this.subscriptionQuery.dispose();
+        this.paymentsQuery.dispose();
+        this.plansQuery.dispose();
+        this.clubBillingQuery.dispose();
+        this.updateBilling.dispose();
+        this._effect1?.();
+        this._effect2?.();
     }
 
     fillForm(data: any) {

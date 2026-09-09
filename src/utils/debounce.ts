@@ -1,4 +1,4 @@
-import { signal } from '@deijose/nix-js';
+import { signal } from '@elurjs/core';
 
 export function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): (...args: Parameters<T>) => void {
     let timeout: ReturnType<typeof setTimeout> | null = null;

@@ -1,5 +1,5 @@
-import { html, signal } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { html, signal } from '@elurjs/core';
+import type { ElurTemplate } from '@elurjs/core';
 
 let onConfirm: (() => void) | null = null;
 const isOpen = signal(false);
@@ -23,7 +23,7 @@ function confirm() {
     closeModal();
 }
 
-export function ConfirmModal(): NixTemplate {
+export function ConfirmModal(): ElurTemplate {
     return html`
         ${() => isOpen.value ? html`
             <div class="modal-overlay" @click=${closeModal}>

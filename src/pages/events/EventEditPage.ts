@@ -1,13 +1,13 @@
 import { router } from '../../router';
-import { html, signal, NixComponent, createForm, required, watch } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { html, signal, ElurComponent, createForm, required, watch } from '@elurjs/core';
+import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import { MapPicker } from '../../components/MapPicker';
 import { setPageTitle } from '../../stores/router.store';
 import type { Event } from '../../types';
 
-export class EventEditPage extends NixComponent {
+export class EventEditPage extends ElurComponent {
     private router = router;
     private eventId = this.router.params.value?.id || '';
     private _unwatch!: () => void;
@@ -86,6 +86,9 @@ export class EventEditPage extends NixComponent {
     onUnmount() {
         this._unwatch?.();
         this.form.dispose();
+        this.eventQuery.dispose();
+        this.updateEvent.dispose();
+        this.routesQuery.dispose();
     }
 
     async handleSubmit(values: { title: string; description: string; date: string; time: string; meetingPoint: string; difficulty: Event['difficulty']; routeId: string }) {

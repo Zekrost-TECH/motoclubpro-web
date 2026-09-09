@@ -8,9 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@deijose/nix-js": "^2.6.0",
-    "@deijose/nix-query": "^1.4.2",
-    "@deijose/vite-plugin-nix-js": "^1.0.0",
+    "@elurjs/core": "^3.6.2",
+    "@elurjs/query": "^1.6.0",
+    "@elurjs/vite-plugin-elur": "^2.1.0",
     "@types/node": "^26.0.0",
     "chartjs-adapter-date-fns": "^3.0.0",
     "ionicons": "^8.0.13"

@@ -1,13 +1,13 @@
 import { router } from '../../router';
-import { html, signal, NixComponent } from '@deijose/nix-js';
-import { createCommand, createQuery, invalidateQueries } from '@deijose/nix-query';
+import { html, signal, ElurComponent } from '@elurjs/core';
+import { createCommand, createQuery, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import { MapPicker } from '../../components/MapPicker';
 import type { Event } from '../../types';
 import { setPageTitle } from '../../stores/router.store';
 
-export class EventCreatePage extends NixComponent {
+export class EventCreatePage extends ElurComponent {
     title = signal('');
     description = signal('');
     date = signal('');

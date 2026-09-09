@@ -1,5 +1,5 @@
-import { html, createForm, required } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { html, createForm, required } from '@elurjs/core';
+import type { ElurTemplate } from '@elurjs/core';
 import type { ClubRideRole } from '../types';
 
 interface RideRoleModalProps {
@@ -8,7 +8,7 @@ interface RideRoleModalProps {
     onClose: () => void;
 }
 
-export function RideRoleModal({ role, onSave, onClose }: RideRoleModalProps): NixTemplate {
+export function RideRoleModal({ role, onSave, onClose }: RideRoleModalProps): ElurTemplate {
     const isEditing = !!role;
     const form = createForm(
         {

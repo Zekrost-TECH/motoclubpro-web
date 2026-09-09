@@ -1,4 +1,4 @@
-import { createRouter } from '@deijose/nix-js';
+import { createRouter } from '@elurjs/core';
 import { authStore } from './stores/auth.store';
 import { clubsStore } from './stores/clubs.store';
 import { routerPath } from './stores/router.store';

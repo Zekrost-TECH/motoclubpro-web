@@ -1,12 +1,12 @@
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
-import { html, signal, NixComponent } from '@deijose/nix-js';
-import { createCommand, invalidateQueries } from '@deijose/nix-query';
+import { html, signal, ElurComponent } from '@elurjs/core';
+import { createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
 import { showToast } from '../../components/Toast';
 
-export class MemberInvitePage extends NixComponent {
+export class MemberInvitePage extends ElurComponent {
     email = signal('');
     role = signal('rider');
     private router = router;

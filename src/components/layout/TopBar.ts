@@ -1,5 +1,5 @@
-import { html } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { html } from '@elurjs/core';
+import type { ElurTemplate } from '@elurjs/core';
 import { currentUser } from '../../stores/auth.store';
 import { activeClub, myClubs } from '../../stores/clubs.store';
 import { switchClub } from '../../stores/clubs.store';
@@ -11,7 +11,7 @@ function getInitials(name?: string): string {
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 }
 
-export function TopBar(): NixTemplate {
+export function TopBar(): ElurTemplate {
     const user = currentUser.value;
 
     return html`

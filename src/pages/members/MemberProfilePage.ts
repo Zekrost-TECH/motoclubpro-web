@@ -1,11 +1,11 @@
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
-import { html, NixComponent } from '@deijose/nix-js';
-import { createQuery } from '@deijose/nix-query';
+import { html, ElurComponent } from '@elurjs/core';
+import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import type { User, Motorcycle } from '../../types';
 
-export class MemberProfilePage extends NixComponent {
+export class MemberProfilePage extends ElurComponent {
     private router = router;
 
     userQuery = createQuery(
@@ -22,6 +22,10 @@ export class MemberProfilePage extends NixComponent {
 
     onMount() {
         setPageTitle('Perfil de Miembro');
+    }
+
+    onUnmount() {
+        this.userQuery.dispose();
     }
 
     get user() { return this.userQuery.data.value as User | null; }

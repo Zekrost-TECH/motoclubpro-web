@@ -1,4 +1,4 @@
-import { createStore } from '@deijose/nix-js';
+import { createStore } from '@elurjs/core';
 import { api, setTokens, clearTokens } from '../services/api.service';
 import type { User } from '../types';
 

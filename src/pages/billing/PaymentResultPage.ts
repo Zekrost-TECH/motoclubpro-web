@@ -1,5 +1,5 @@
-import { html, signal, NixComponent } from '@deijose/nix-js';
-import { createQuery, invalidateQueries } from '@deijose/nix-query';
+import { html, signal, ElurComponent } from '@elurjs/core';
+import { createQuery, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
@@ -10,7 +10,7 @@ import type { Subscription } from '../../types';
  * Espera a que el webhook confirme: refresca la suscripción hasta verla activa
  * o un pago aprobado nuevo (máx. ~30s).
  */
-export class PaymentResultPage extends NixComponent {
+export class PaymentResultPage extends ElurComponent {
     status = signal<'checking' | 'approved' | 'failed' | 'timeout'>('checking');
     attempts = 0;
     private _timer: number | null = null;

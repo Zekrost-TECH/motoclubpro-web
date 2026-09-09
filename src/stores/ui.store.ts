@@ -1,4 +1,4 @@
-import { createStore } from '@deijose/nix-js';
+import { createStore } from '@elurjs/core';
 
 export const uiStore = createStore({
     mobileMenuOpen: false,

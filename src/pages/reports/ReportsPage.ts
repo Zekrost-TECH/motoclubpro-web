@@ -1,5 +1,5 @@
-import { html, NixComponent, signal } from '@deijose/nix-js';
-import { createQuery } from '@deijose/nix-query';
+import { html, ElurComponent, signal } from '@elurjs/core';
+import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { SkeletonCard } from '../../components/Skeleton';
 import { FeatureLocked } from '../../components/FeatureLocked';
@@ -10,7 +10,7 @@ const now = new Date();
 const defaultFrom = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
 const defaultTo = now.toISOString().split('T')[0];
 
-export class ReportsPage extends NixComponent {
+export class ReportsPage extends ElurComponent {
     fromDate = signal(defaultFrom);
     toDate = signal(defaultTo);
 
@@ -31,6 +31,14 @@ export class ReportsPage extends NixComponent {
 
     onMount() {
         setPageTitle('Reportes');
+    }
+
+    onUnmount() {
+        this.eventsReportQuery.dispose();
+        this.sosReportQuery.dispose();
+        this.membersReportQuery.dispose();
+        this.financialReportQuery.dispose();
+        this.supportPointsReportQuery.dispose();
     }
 
     isLoading() {

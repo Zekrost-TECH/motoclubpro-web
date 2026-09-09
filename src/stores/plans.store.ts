@@ -1,4 +1,4 @@
-import { createQuery, invalidateQueries } from '@deijose/nix-query';
+import { createQuery, invalidateQueries } from '@elurjs/query';
 import { api } from '../services/api.service';
 import { activeClub } from './clubs.store';
 import { currentUser } from './auth.store';

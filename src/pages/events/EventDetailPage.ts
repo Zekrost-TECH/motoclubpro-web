@@ -1,6 +1,6 @@
 import { router } from '../../router';
-import { html, NixComponent, createForm, repeat } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { html, ElurComponent, createForm, repeat } from '@elurjs/core';
+import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import type { Event as EventModel, EventAttendee, ChecklistItem, InventoryItem, RideRole, Route, ClubRideRole } from '../../types';
 import { showToast } from '../../components/Toast';
@@ -10,7 +10,7 @@ import { formatEnum, buildRideRoleLabels } from '../../utils/labels';
 import { formatLocalDate } from '../../utils/date';
 import { hasFeature } from '../../stores/plans.store';
 
-export class EventDetailPage extends NixComponent {
+export class EventDetailPage extends ElurComponent {
     private router = router;
     private eventId = this.router.params.value?.id || '';
 
@@ -147,6 +147,18 @@ export class EventDetailPage extends NixComponent {
     onUnmount() {
         this.invForm.dispose();
         this.checklistForm.dispose();
+        this.eventQuery.dispose();
+        this.attendeesQuery.dispose();
+        this.checklistQuery.dispose();
+        this.inventoryQuery.dispose();
+        this.routesQuery.dispose();
+        this.rideRolesQuery.dispose();
+        this.addInventory.dispose();
+        this.removeInventory.dispose();
+        this.updateEventStatus.dispose();
+        this.setRole.dispose();
+        this.addChecklist.dispose();
+        this.removeChecklist.dispose();
     }
 
     get event() { return this.eventQuery.data.value as EventModel | null; }

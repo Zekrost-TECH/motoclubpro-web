@@ -1,5 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
-import nixjs from "@deijose/vite-plugin-nix-js";
+import elur from "@elurjs/vite-plugin-elur";
 
 // Inyecta la Content-Security-Policy (meta) solo en builds de producción.
 // En dev se omite para no romper HMR ni el dev server.
@@ -45,5 +45,5 @@ function cspPlugin() {
 }
 
 export default defineConfig({
-  plugins: [nixjs(), cspPlugin()],
+  plugins: [elur(), cspPlugin()],
 });

@@ -1,6 +1,6 @@
 import { router } from '../../router';
-import { html, signal, NixComponent } from '@deijose/nix-js';
-import { createQuery } from '@deijose/nix-query';
+import { html, signal, ElurComponent } from '@elurjs/core';
+import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
@@ -10,7 +10,7 @@ import { createDebounced } from '../../utils/debounce';
 import { clubLimitsQuery, refreshClubLimits, canAddMember, memberLimitText, isAtMemberLimit } from '../../stores/plans.store';
 import type { Member } from '../../types';
 
-export class MembersListPage extends NixComponent {
+export class MembersListPage extends ElurComponent {
     search = createDebounced('', 300);
     roleFilter = signal('');
     private router = router;
@@ -30,6 +30,10 @@ export class MembersListPage extends NixComponent {
     onMount() {
         setPageTitle('Miembros');
         refreshClubLimits();
+    }
+
+    onUnmount() {
+        this.membersQuery.dispose();
     }
 
     getInitials(name?: string): string {

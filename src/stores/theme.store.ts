@@ -1,4 +1,4 @@
-import { createStore, persistPlugin } from '@deijose/nix-js';
+import { createStore, persistPlugin } from '@elurjs/core';
 
 export type Theme = 'dark' | 'light';
 

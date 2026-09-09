@@ -1,6 +1,6 @@
 import { router } from '../../router';
-import { html, signal, NixComponent, repeat } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries } from '@deijose/nix-query';
+import { html, signal, ElurComponent, repeat } from '@elurjs/core';
+import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { openConfirm } from '../../components/ConfirmModal';
 import { SkeletonTable } from '../../components/Skeleton';
@@ -11,7 +11,7 @@ import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
 import { clubLimitsQuery, refreshClubLimits, canCreateEvent, eventLimitText } from '../../stores/plans.store';
 
-export class EventsListPage extends NixComponent {
+export class EventsListPage extends ElurComponent {
     statusFilter = signal('');
     search = createDebounced('', 300);
     private router = router;
@@ -37,6 +37,11 @@ export class EventsListPage extends NixComponent {
     onMount() {
         setPageTitle('Rodadas');
         refreshClubLimits();
+    }
+
+    onUnmount() {
+        this.eventsQuery.dispose();
+        this.deleteEvent.dispose();
     }
 
     filteredEvents() {

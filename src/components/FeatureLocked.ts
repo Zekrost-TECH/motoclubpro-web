@@ -1,8 +1,8 @@
-import { html } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { html } from '@elurjs/core';
+import type { ElurTemplate } from '@elurjs/core';
 import { router } from '../router';
 
-export function FeatureLocked({ feature, plan = 'Pro' }: { feature: string; plan?: string }): NixTemplate {
+export function FeatureLocked({ feature, plan = 'Pro' }: { feature: string; plan?: string }): ElurTemplate {
     return html`
         <div class="empty" style="padding:var(--mc-space-8);">
             <ion-icon name="lock-closed-outline" class="empty-icon" style="color:var(--mc-warning);"></ion-icon>

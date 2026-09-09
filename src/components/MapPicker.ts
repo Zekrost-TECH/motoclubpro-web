@@ -1,4 +1,4 @@
-import { NixComponent, html, ref, signal } from '@deijose/nix-js';
+import { ElurComponent, html, ref, signal } from '@elurjs/core';
 import { loadGoogleMaps } from '../services/maps';
 
 declare const google: any;
@@ -15,7 +15,7 @@ interface MapPickerProps {
     label?: string;
 }
 
-export class MapPicker extends NixComponent {
+export class MapPicker extends ElurComponent {
     private _mapContainer = ref<HTMLDivElement>();
     private _map: any = null;
     private _marker: any = null;
@@ -68,6 +68,19 @@ export class MapPicker extends NixComponent {
         }).catch(() => {
             // Map fails silently if API key is missing
         });
+    }
+
+    onUnmount() {
+        const maps = (window as any).google?.maps;
+        if (this._marker && maps?.event?.clearInstanceListeners) {
+            maps.event.clearInstanceListeners(this._marker);
+        }
+        if (this._map && maps?.event?.clearInstanceListeners) {
+            maps.event.clearInstanceListeners(this._map);
+        }
+        this._marker = null;
+        this._map = null;
+        this._geocoder = null;
     }
 
     private _setMarker(position: { lat: number; lng: number }, maps: any) {

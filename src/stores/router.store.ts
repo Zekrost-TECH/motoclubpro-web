@@ -1,4 +1,4 @@
-import { signal } from '@deijose/nix-js';
+import { signal } from '@elurjs/core';
 
 export const routerPath = signal(window.location.pathname);
 export const pageTitle = signal('BikerOS');

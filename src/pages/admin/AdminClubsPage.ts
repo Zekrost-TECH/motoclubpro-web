@@ -1,12 +1,12 @@
-import { html, NixComponent } from '@deijose/nix-js';
-import { createQuery } from '@deijose/nix-query';
+import { html, ElurComponent } from '@elurjs/core';
+import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { setPageTitle } from '../../stores/router.store';
 import { router } from '../../router';
 import { switchClub } from '../../stores/clubs.store';
 import type { Club } from '../../types';
 
-export class AdminClubsPage extends NixComponent {
+export class AdminClubsPage extends ElurComponent {
     clubsQuery = createQuery('admin/clubs', async () => {
         const res = await api.auth.clubs();
         return res.clubs || [];

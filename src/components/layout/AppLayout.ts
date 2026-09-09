@@ -1,15 +1,15 @@
-import { html, RouterView, NixComponent } from '@deijose/nix-js';
-import type { NixTemplate } from '@deijose/nix-js';
+import { html, RouterView, ElurComponent } from '@elurjs/core';
+import type { ElurTemplate } from '@elurjs/core';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { ToastContainer } from '../Toast';
 import { ConfirmModal } from '../ConfirmModal';
 import { mobileMenuOpen, closeMobileMenu } from '../../stores/ui.store';
 
-export class AppLayout extends NixComponent {
+export class AppLayout extends ElurComponent {
     private nestedRouter = new RouterView(1);
 
-    render(): NixTemplate {
+    render(): ElurTemplate {
         return html`
         <div class="app-layout">
             ${Sidebar()}

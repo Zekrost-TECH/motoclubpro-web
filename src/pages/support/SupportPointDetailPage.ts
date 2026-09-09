@@ -1,7 +1,7 @@
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
-import { html, signal, NixComponent, createForm, required, watch } from '@deijose/nix-js';
-import { createQuery, createCommand, invalidateQueries, updateQueryData } from '@deijose/nix-query';
+import { html, signal, ElurComponent, createForm, required, watch } from '@elurjs/core';
+import { createQuery, createCommand, invalidateQueries, updateQueryData } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import { MapPicker } from '../../components/MapPicker';
@@ -18,7 +18,7 @@ const supportTypes = [
     { value: 'hospital', label: 'Hospital' },
 ];
 
-export class SupportPointDetailPage extends NixComponent {
+export class SupportPointDetailPage extends ElurComponent {
     private router = router;
     private _unwatch!: () => void;
     private _pointLat = signal<number | null>(null);
@@ -153,6 +153,9 @@ export class SupportPointDetailPage extends NixComponent {
     onUnmount() {
         this._unwatch?.();
         this.form.dispose();
+        this.pointQuery.dispose();
+        this.saveCommand.dispose();
+        this.verifyCommand.dispose();
     }
 
     async handleSubmit(values: {
