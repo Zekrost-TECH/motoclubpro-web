@@ -1,3 +1,5 @@
+import { TURNSTILE_SITE_KEY } from '../config/env';
+
 declare global {
     interface Window {
         turnstile?: {
@@ -18,7 +20,7 @@ declare global {
     }
 }
 
-const SITE_KEY = (import.meta as any).env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+const SITE_KEY = TURNSTILE_SITE_KEY;
 
 export function isTurnstileEnabled(): boolean {
     return Boolean(SITE_KEY);

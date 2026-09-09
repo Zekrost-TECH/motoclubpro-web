@@ -1,8 +1,9 @@
 /// <reference types="vite/client" />
 import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, EventGuest, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle, SosAlert, ClubRideRole, ClubLimits, Plan, WidgetCheckoutConfig } from '../types';
 import { router } from '../router';
+import { API_BASE_URL } from '../config/env';
 
-const BASE_URL = (import.meta as any).env.VITE_WEB_API_URL || 'http://localhost:3000/api/v1';
+const BASE_URL = API_BASE_URL;
 
 let _accessToken: string | null = localStorage.getItem('mcp_access_token');
 let _activeClubId: string | null = localStorage.getItem('mcp_active_club');

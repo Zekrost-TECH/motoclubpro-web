@@ -1,4 +1,4 @@
-import { html, mount, RouterView, effect } from '@elurjs/core';
+import { html, mount, RouterView, effect, createErrorBoundary } from '@elurjs/core';
 // Registra el custom element <ion-icon> y SOLO los iconos usados en la app.
 // ionicons v8 ya no auto-registra el componente ni trae los iconos incluidos:
 // hay que definir el custom element y registrar los iconos con addIcons.
@@ -43,7 +43,19 @@ addIcons({
 function App() {
     return html`
         <div id="app-root">
-            ${new RouterView(0)}
+            ${createErrorBoundary(new RouterView(0), (err: unknown) => {
+        console.error('[app] Error boundary:', err);
+        return html`
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;font-family:Inter,sans-serif;">
+                        <ion-icon name="alert-circle-outline" style="font-size:3rem;color:var(--mc-danger,#ef4444);"></ion-icon>
+                        <h2 style="margin:1rem 0 0.5rem;font-size:1.25rem;">Algo salió mal</h2>
+                        <p style="color:var(--mc-text-muted,#6b7280);margin:0 0 1.5rem;">Se produjo un error inesperado. Recarga la página para continuar.</p>
+                        <button class="btn btn-primary" @click=${() => window.location.reload()} style="padding:0.6rem 1.5rem;border-radius:8px;border:none;cursor:pointer;background:var(--mc-accent,#0A2540);color:#fff;">
+                            Recargar
+                        </button>
+                    </div>
+                `;
+    })}
         </div>
     `;
 }

@@ -13,10 +13,10 @@
     "@elurjs/vite-plugin-elur": "^2.1.0",
     "@types/node": "^26.0.0",
     "chartjs-adapter-date-fns": "^3.0.0",
-    "ionicons": "^8.0.13"
+    "ionicons": "^8.1.0"
   },
   "devDependencies": {
-    "typescript": "~5.9.3",
-    "vite": "^8.0.0"
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
   }
 }

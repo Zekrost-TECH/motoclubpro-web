@@ -2,9 +2,10 @@
 // RouteMapEditor) duplicaba este script: el primer script cargado podía
 // fallar y los demás reintentaban en paralelo.
 /* global google */
+import { GOOGLE_MAPS_API_KEY } from '../config/env';
 declare const google: any;
 
-const API_KEY = (import.meta as any).env.VITE_GOOGLE_MAPS_API_KEY;
+const API_KEY = GOOGLE_MAPS_API_KEY;
 
 let mapsPromise: Promise<any> | null = null;
 
