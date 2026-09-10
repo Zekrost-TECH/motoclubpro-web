@@ -1,4 +1,4 @@
-import { createQuery, invalidateQueries } from '@elurjs/query';
+import { createQuery, invalidateQueries, setQueryData } from '@elurjs/query';
 import { api } from '../services/api.service';
 import { activeClub } from './clubs.store';
 import { currentUser } from './auth.store';
@@ -15,6 +15,21 @@ export const clubLimitsQuery = createQuery(
 
 export function refreshClubLimits(): void {
     invalidateQueries('club-limits');
+}
+
+/**
+ * Fetch club limits and seed the query cache before the app mounts.
+ * Prevents the sidebar from rendering with null limits (race condition
+ * where feature-gated menu items would be hidden until the query resolves).
+ */
+export async function preloadClubLimits(): Promise<void> {
+    if (!activeClub.value) return;
+    try {
+        const limits = await api.plans.limits();
+        setQueryData('club-limits', limits);
+    } catch {
+        // If preloading fails, the query will retry on mount.
+    }
 }
 
 export function isSuperadmin(): boolean {

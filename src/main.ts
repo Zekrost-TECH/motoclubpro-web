@@ -22,7 +22,7 @@ import { router } from './router';
 import { refreshSession } from './stores/auth.store';
 import { loadClubs } from './stores/clubs.store';
 import { applyTheme } from './stores/theme.store';
-import { refreshClubLimits } from './stores/plans.store';
+import { preloadClubLimits } from './stores/plans.store';
 
 defineCustomElement();
 addIcons({
@@ -65,8 +65,10 @@ async function init() {
     applyTheme();
     effect(() => applyTheme());
     const ok = await refreshSession();
-    if (ok) await loadClubs();
-    refreshClubLimits();
+    if (ok) {
+        await loadClubs();
+        await preloadClubLimits();
+    }
     mount(App(), '#app', { router });
 }
 
