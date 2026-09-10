@@ -1,5 +1,5 @@
 import { router } from '../../router';
-import { html, ElurComponent } from '@elurjs/core';
+import { html, ElurComponent, repeat } from '@elurjs/core';
 import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { SkeletonKpi } from '../../components/Skeleton';
@@ -187,11 +187,11 @@ export class DashboardPage extends ElurComponent {
                                     <h4>Sin rodadas próximas</h4>
                                     <p>Crea una nueva rodada para empezar.</p>
                                 </div>`;
-                return evts.slice(0, 5).map((e: any) => html`
+                return repeat(evts.slice(0, 5), (e: any) => e.id, (e: any) => html`
                                 <div class="list-item" @click=${() => this.router.navigate(`/events/${e.id}`)}>
                                     <div class="list-item-info">
                                         <h4>${e.title}</h4>
-                                        <p>${formatLocalDate(e.date)} · ${e.meetingPoint || 'Punto de encuentro'}</p>
+                                        <p>${() => formatLocalDate(e.date)} · ${() => e.meetingPoint || 'Punto de encuentro'}</p>
                                     </div>
                                     <div class="list-item-meta">
                                         <span class="badge badge-${e.status}">${formatEnum(e.status)}</span>
@@ -233,8 +233,8 @@ export class DashboardPage extends ElurComponent {
                                         <ion-icon name="warning-outline"></ion-icon>
                                     </div>
                                     <div class="sos-info">
-                                        <h4>${a.user_name || a.userName || a.user_id || 'Usuario desconocido'}</h4>
-                                        <p>${formatEnum(a.type) || 'SOS'} · ${a.timeAgo || 'Hace unos minutos'}</p>
+                                        <h4>${() => a.user_name || a.userName || a.user_id || 'Usuario desconocido'}</h4>
+                                        <p>${() => formatEnum(a.type) || 'SOS'} · ${() => a.timeAgo || 'Hace unos minutos'}</p>
                                     </div>
                                     ${mapsLink ? html`<a href=${mapsLink} target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><ion-icon name="location-outline"></ion-icon></a>` : ''}
                                     <span class="badge badge-danger">Activo</span>
@@ -263,11 +263,11 @@ export class DashboardPage extends ElurComponent {
                                     <h4>Sin rodadas completadas</h4>
                                     <p>Aún no hay rodadas finalizadas.</p>
                                 </div>`;
-                return evts.map((e) => html`
+                return repeat(evts, (e) => e.id, (e) => html`
                                 <div class="list-item" @click=${() => this.router.navigate(`/events/${e.id}`)}>
                                     <div class="list-item-info">
                                         <h4>${e.title}</h4>
-                                        <p>${formatLocalDate(e.date)} · ${e.meetingPoint || 'Punto de encuentro'}</p>
+                                        <p>${() => formatLocalDate(e.date)} · ${() => e.meetingPoint || 'Punto de encuentro'}</p>
                                     </div>
                                     <div class="list-item-meta">
                                         <span class="badge badge-${e.status}">${formatEnum(e.status)}</span>
