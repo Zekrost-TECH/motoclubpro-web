@@ -10,7 +10,7 @@ export const clubLimitsQuery = createQuery(
         if (!activeClub.value) return null;
         return api.plans.limits();
     },
-    { staleTime: 60_000 }
+    { staleTime: 60_000, keepPreviousData: true }
 );
 
 export function refreshClubLimits(): void {

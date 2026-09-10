@@ -7,7 +7,7 @@ import { setPageTitle } from '../../stores/router.store';
 import { SkeletonTable } from '../../components/Skeleton';
 import { formatEnum, ROLE_LABELS } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
-import { clubLimitsQuery, refreshClubLimits, canAddMember, memberLimitText, isAtMemberLimit } from '../../stores/plans.store';
+import { clubLimitsQuery, canAddMember, memberLimitText, isAtMemberLimit } from '../../stores/plans.store';
 import type { Member } from '../../types';
 
 export class MembersListPage extends ElurComponent {
@@ -29,7 +29,6 @@ export class MembersListPage extends ElurComponent {
 
     onMount() {
         setPageTitle('Miembros');
-        refreshClubLimits();
     }
 
     onUnmount() {

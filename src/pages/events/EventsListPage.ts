@@ -9,7 +9,7 @@ import { createDebounced } from '../../utils/debounce';
 import { formatLocalDate } from '../../utils/date';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
-import { clubLimitsQuery, refreshClubLimits, canCreateEvent, eventLimitText } from '../../stores/plans.store';
+import { clubLimitsQuery, canCreateEvent, eventLimitText } from '../../stores/plans.store';
 
 export class EventsListPage extends ElurComponent {
     statusFilter = signal('');
@@ -36,7 +36,6 @@ export class EventsListPage extends ElurComponent {
 
     onMount() {
         setPageTitle('Rodadas');
-        refreshClubLimits();
     }
 
     onUnmount() {
