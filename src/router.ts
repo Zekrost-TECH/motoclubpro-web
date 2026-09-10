@@ -22,13 +22,13 @@ import { RideRolesPage } from './pages/settings/RideRolesPage';
 import { AdminClubsPage } from './pages/admin/AdminClubsPage';
 
 // Páginas pesadas (con Google Maps): lazy-load para reducir el bundle inicial
-const EventCreatePage = lazy(() => import('./pages/events/EventCreatePage').then(m => m.EventCreatePage) as any);
-const EventEditPage = lazy(() => import('./pages/events/EventEditPage').then(m => m.EventEditPage) as any);
-const RouteCreatePage = lazy(() => import('./pages/routes/RouteCreatePage').then(m => m.RouteCreatePage) as any);
-const RouteDetailPage = lazy(() => import('./pages/routes/RouteDetailPage').then(m => m.RouteDetailPage) as any);
-const RouteEditPage = lazy(() => import('./pages/routes/RouteEditPage').then(m => m.RouteEditPage) as any);
-const SupportPointDetailPage = lazy(() => import('./pages/support/SupportPointDetailPage').then(m => m.SupportPointDetailPage) as any);
-const SosPage = lazy(() => import('./pages/sos/SosPage').then(m => m.SosPage) as any);
+const EventCreatePage = lazy(() => import('./pages/events/EventCreatePage'), { selector: (m: any) => m.EventCreatePage });
+const EventEditPage = lazy(() => import('./pages/events/EventEditPage'), { selector: (m: any) => m.EventEditPage });
+const RouteCreatePage = lazy(() => import('./pages/routes/RouteCreatePage'), { selector: (m: any) => m.RouteCreatePage });
+const RouteDetailPage = lazy(() => import('./pages/routes/RouteDetailPage'), { selector: (m: any) => m.RouteDetailPage });
+const RouteEditPage = lazy(() => import('./pages/routes/RouteEditPage'), { selector: (m: any) => m.RouteEditPage });
+const SupportPointDetailPage = lazy(() => import('./pages/support/SupportPointDetailPage'), { selector: (m: any) => m.SupportPointDetailPage });
+const SosPage = lazy(() => import('./pages/sos/SosPage'), { selector: (m: any) => m.SosPage });
 
 export const router = createRouter([
     {

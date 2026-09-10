@@ -45,5 +45,5 @@ function cspPlugin() {
 }
 
 export default defineConfig({
-  plugins: [elur(), cspPlugin()],
+  plugins: [elur({ compiler: true }), cspPlugin()],
 });
