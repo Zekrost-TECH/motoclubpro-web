@@ -36,8 +36,6 @@ function isActiveRoute(path: string, current: string): boolean {
 }
 
 export function Sidebar(): ElurTemplate {
-    const user = currentUser.value;
-
     return html`
         <aside class=${() => `sidebar ${mobileMenuOpen.value ? 'open' : ''}`}>
             <div class="sidebar-header">
@@ -66,12 +64,12 @@ export function Sidebar(): ElurTemplate {
         }}
             </nav>
             <div class="sidebar-footer">
-                <div class="avatar avatar-sm">${getInitials(user?.name || user?.email)}</div>
+                <div class="avatar avatar-sm">${() => getInitials(currentUser.value?.name || currentUser.value?.email)}</div>
                 <div class="sidebar-user">
-                    <span class="sidebar-user-name">${user?.name || user?.email || 'Usuario'}</span>
-                    <span class="sidebar-user-role">${user?.role ? ROLE_LABELS[user.role] || user.role : 'Miembro'}</span>
+                    <span class="sidebar-user-name">${() => currentUser.value?.name || currentUser.value?.email || 'Usuario'}</span>
+                    <span class="sidebar-user-role">${() => currentUser.value?.role ? ROLE_LABELS[currentUser.value.role] || currentUser.value.role : 'Miembro'}</span>
                 </div>
-                <button class="sidebar-logout" @click=${() => { logout(); router.navigate('/login'); }} title="Cerrar sesión">
+                <button class="sidebar-logout" @click=${async () => { await logout(); router.navigate('/login'); }} title="Cerrar sesión">
                     <ion-icon name="log-out-outline"></ion-icon>
                 </button>
             </div>
