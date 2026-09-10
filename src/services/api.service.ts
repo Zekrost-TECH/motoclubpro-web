@@ -154,7 +154,7 @@ function mapEvent(data: any): Event {
         id: data.id,
         title: data.title,
         description: data.description,
-        date: data.date,
+        date: data.date instanceof Date ? data.date.toISOString() : data.date,
         time: data.time,
         meetingPoint: data.meeting_point ?? data.meetingPoint ?? '',
         difficulty: data.difficulty,
