@@ -4,6 +4,7 @@ import { api } from '../../services/api.service';
 import { setPageTitle } from '../../stores/router.store';
 import { router } from '../../router';
 import { switchClub } from '../../stores/clubs.store';
+import { QueryErrorState } from '../../components/QueryError';
 import type { Club } from '../../types';
 
 export class AdminClubsPage extends ElurComponent {
@@ -35,7 +36,7 @@ export class AdminClubsPage extends ElurComponent {
             ${() => this.clubsQuery.status.value === 'pending'
                 ? html`<p>Cargando clubs...</p>`
                 : this.clubsQuery.status.value === 'error'
-                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar clubs</div>`
+                    ? QueryErrorState({ query: this.clubsQuery, message: 'Error al cargar clubs' })
                     : html`
                     <table class="data-table">
                         <thead><tr><th>Nombre</th><th>Ciudad</th><th>Rol</th><th></th></tr></thead>

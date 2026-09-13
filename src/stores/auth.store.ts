@@ -1,5 +1,6 @@
 import { createStore } from '@elurjs/core';
 import { api, setTokens, clearTokens } from '../services/api.service';
+import { localGet } from '../utils/storage';
 import type { User } from '../types';
 
 export const authStore = createStore({
@@ -25,7 +26,7 @@ export async function login(email: string, password: string, turnstileToken?: st
 }
 
 export async function refreshSession(): Promise<boolean> {
-    const token = localStorage.getItem('mcp_refresh_token');
+    const token = localGet('bikeros_refresh_token');
     if (!token) return false;
     try {
         const res = await api.auth.refresh();

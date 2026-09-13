@@ -4,6 +4,7 @@ import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import { RouteMapEditor } from '../../components/RouteMapEditor';
+import { QueryErrorState } from '../../components/QueryError';
 import { setPageTitle } from '../../stores/router.store';
 import type { Route } from '../../types';
 
@@ -160,7 +161,7 @@ export class RouteEditPage extends ElurComponent {
         ${() => this.routeQuery.status.value === 'pending' && !this.routeQuery.data.value
                 ? html`<div class="form-card"><p>Cargando ruta...</p></div>`
                 : this.routeQuery.status.value === 'error'
-                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar ruta</div>`
+                    ? QueryErrorState({ query: this.routeQuery, message: 'Error al cargar ruta' })
                     : html`
         <form class="form-card" @submit.prevent=${this.form.handleSubmit((values) => this.handleSubmit(values))}>
             <h3 class="form-section-title">Información general</h3>

@@ -3,6 +3,7 @@ import { setPageTitle } from '../../stores/router.store';
 import { html, ElurComponent } from '@elurjs/core';
 import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
+import { QueryErrorState } from '../../components/QueryError';
 import type { User, Motorcycle } from '../../types';
 
 export class MemberProfilePage extends ElurComponent {
@@ -50,6 +51,9 @@ export class MemberProfilePage extends ElurComponent {
             </div>
         </div>
         ${() => {
+                if (this.userQuery.status.value === 'error') {
+                    return QueryErrorState({ query: this.userQuery, message: 'No se pudo cargar el perfil del miembro.' });
+                }
                 const u = this.user;
                 if (!u) return html`<div class="empty"><ion-icon name="person-outline" class="empty-icon"></ion-icon><h4>Cargando...</h4></div>`;
                 return html`

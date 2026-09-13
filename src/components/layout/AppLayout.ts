@@ -4,7 +4,7 @@ import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { ToastContainer } from '../Toast';
 import { ConfirmModal } from '../ConfirmModal';
-import { mobileMenuOpen, closeMobileMenu } from '../../stores/ui.store';
+import { mobileMenuOpen, closeMobileMenu, isOffline } from '../../stores/ui.store';
 
 export class AppLayout extends ElurComponent {
     private nestedRouter = new RouterView(1);
@@ -16,6 +16,12 @@ export class AppLayout extends ElurComponent {
             <div class=${() => "mobile-menu-overlay " + (mobileMenuOpen.value ? 'open' : '')} @click=${closeMobileMenu}></div>
             <div class="main-content">
                 ${TopBar()}
+                ${() => isOffline.value ? html`
+                    <div class="offline-banner" role="status">
+                        <ion-icon name="warning-outline"></ion-icon>
+                        Sin conexión — los datos pueden estar desactualizados
+                    </div>
+                ` : ''}
                 <main class="page-content">${this.nestedRouter}</main>
             </div>
             ${ToastContainer()}

@@ -5,6 +5,7 @@ import { api } from '../../services/api.service';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
 import { SkeletonTable } from '../../components/Skeleton';
+import { QueryErrorState } from '../../components/QueryError';
 import { formatEnum, ROLE_LABELS } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
 import { clubLimitsQuery, canAddMember, memberLimitText, isAtMemberLimit } from '../../stores/plans.store';
@@ -83,7 +84,7 @@ export class MembersListPage extends ElurComponent {
             ${() => this.membersQuery.status.value === 'pending'
                 ? SkeletonTable(5)
                 : this.membersQuery.status.value === 'error'
-                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar miembros</div>`
+                    ? QueryErrorState({ query: this.membersQuery, message: 'Error al cargar miembros' })
                     : html`
                     <table class="data-table">
                         <thead>

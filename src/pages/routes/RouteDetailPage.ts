@@ -4,6 +4,7 @@ import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import type { Route, Waypoint } from '../../types';
 import { MapView } from '../../components/MapView';
+import { QueryErrorState } from '../../components/QueryError';
 import { formatEnum } from '../../utils/labels';
 import { setPageTitle } from '../../stores/router.store';
 
@@ -74,6 +75,9 @@ export class RouteDetailPage extends ElurComponent {
             </div>
         </div>
         ${() => {
+                if (this.routeQuery.status.value === 'error') {
+                    return QueryErrorState({ query: this.routeQuery, message: 'No se pudo cargar la ruta.' });
+                }
                 const r = this.route;
                 if (!r) return html`<div class="empty"><ion-icon name="map-outline" class="empty-icon"></ion-icon><h4>Cargando...</h4></div>`;
                 const waypoints = this.waypoints.map((wp) => ({

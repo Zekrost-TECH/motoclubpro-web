@@ -5,7 +5,7 @@
     "": {
       "name": "ironbikers-web",
       "dependencies": {
-        "@elurjs/core": "^3.6.2",
+        "@elurjs/core": "^3.7.0-beta.0",
         "@elurjs/query": "^1.6.0",
         "@elurjs/vite-plugin-elur": "^2.1.0",
         "@types/node": "^26.0.0",
@@ -51,7 +51,7 @@
 
     "@babel/types": ["@babel/types@7.29.7", "", { "dependencies": { "@babel/helper-string-parser": "^7.29.7", "@babel/helper-validator-identifier": "^7.29.7" } }, "sha512-4zBIxpPzowiZpusoFkyGVwakdRJUyuH5PxQ/PrqghfdFWWasvnCdPfQXHrenDai+gyLARulZjZowCOj6fjT4pA=="],
 
-    "@elurjs/core": ["@elurjs/core@3.6.2", "", {}, "sha512-wE1pfkqIttEynO5/kn/duRLdery0IZDES82CdRn+wQUj1TjHhy/9COBdC2dMVDwQQbIenaEO6v4NF6S/KeA8yQ=="],
+    "@elurjs/core": ["@elurjs/core@3.7.0-beta.0", "", {}, "sha512-bgYchDxJTT63BFiy0luisOeAuor2KIVXZLPt1hDjFSUb1Ym/RppcOHblRQWChtyVxbR0gRqZ/+hr51DKaJpZJA=="],
 
     "@elurjs/core-compiler": ["@elurjs/core-compiler@1.0.0", "", {}, "sha512-PG2wWeI9kpRw4oWvtYqIenZn9K7aqkPXkqOjvzVoSS//tkMCy1HOBRd1a6xNiLzSlAZVgyNBl8gyh742yq9PdA=="],
 

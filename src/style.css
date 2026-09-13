@@ -1237,6 +1237,20 @@ select.input {
   margin-right: auto;
 }
 
+/* ── Offline banner ──────────────────────────────────────────────────── */
+.offline-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mc-space-2);
+  padding: var(--mc-space-2) var(--mc-space-4);
+  background: var(--mc-warning-bg);
+  color: var(--mc-warning-500);
+  font-size: var(--mc-text-sm);
+  font-weight: 500;
+  border-bottom: 1px solid var(--mc-warning-500);
+}
+
 /* ── Club Selector ───────────────────────────────────────────────────── */
 .club-list {
   display: flex;

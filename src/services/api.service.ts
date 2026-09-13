@@ -2,19 +2,28 @@
 import type { Club, User, Member, Event, EventAttendee, ChecklistItem, InventoryItem, EventGuest, Route, Waypoint, SupportPoint, Subscription, Payment, Motorcycle, SosAlert, ClubRideRole, ClubLimits, Plan, WidgetCheckoutConfig } from '../types';
 import { router } from '../router';
 import { API_BASE_URL } from '../config/env';
+import { localGet, localSet, localRemove } from '../utils/storage';
 
 const BASE_URL = API_BASE_URL;
 
-let _accessToken: string | null = localStorage.getItem('mcp_access_token');
-let _activeClubId: string | null = localStorage.getItem('mcp_active_club');
+// Timeout por defecto de cada request — sin él, un request colgado deja
+// skeletons girando para siempre.
+const REQUEST_TIMEOUT_MS = 15_000;
+
+export const TOKEN_KEY = 'bikeros_access_token';
+const REFRESH_KEY = 'bikeros_refresh_token';
+const CLUB_KEY = 'bikeros_active_club';
+
+let _accessToken: string | null = localGet(TOKEN_KEY);
+let _activeClubId: string | null = localGet(CLUB_KEY);
 
 function handleAuthError(status: number): void {
     // Solo 401 cierra sesión. Un 403 significa "autenticado pero sin permiso":
     // desloguear por un 403 borraba la sesión ante cualquier endpoint restringido.
     if (status === 401) {
-        localStorage.removeItem('mcp_access_token');
-        localStorage.removeItem('mcp_refresh_token');
-        localStorage.removeItem('mcp_active_club');
+        localRemove(TOKEN_KEY);
+        localRemove(REFRESH_KEY);
+        localRemove(CLUB_KEY);
         _accessToken = null;
         _activeClubId = null;
         router.navigate('/login');
@@ -29,12 +38,13 @@ function refreshTokens(): Promise<boolean> {
     if (!_refreshPromise) {
         _refreshPromise = (async () => {
             try {
-                const rt = localStorage.getItem('mcp_refresh_token');
+                const rt = localGet(REFRESH_KEY);
                 if (!rt) return false;
                 const r = await fetch(`${BASE_URL}/auth/refresh`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ refresh_token: rt }),
+                    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
                 });
                 if (!r.ok) return false;
                 const data = await r.json();
@@ -66,7 +76,27 @@ async function fetchAuthorized(path: string, options: RequestInit, retried: bool
     if (_activeClubId) {
         headers['X-Club-ID'] = _activeClubId;
     }
-    const r = await fetch(url, { ...options, headers });
+    // Fail-fast offline: sin esto, fetch cuelga hasta el timeout del SO y la
+    // UI solo muestra skeletons. La página recibe un error claro al instante.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        throw new Error('Sin conexión a internet');
+    }
+    let r: Response;
+    try {
+        r = await fetch(url, {
+            ...options,
+            headers,
+            signal: options.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        });
+    } catch (err) {
+        if (err instanceof DOMException && err.name === 'TimeoutError') {
+            throw new Error('La solicitud tardó demasiado. Intenta de nuevo.');
+        }
+        if (err instanceof TypeError) {
+            throw new Error('No se pudo conectar con el servidor');
+        }
+        throw err;
+    }
     if (r.status === 401 && !retried) {
         const refreshed = await refreshTokens();
         if (refreshed) return fetchAuthorized(path, options, true);
@@ -102,21 +132,21 @@ async function requestRaw<T>(path: string, options: RequestInit = {}): Promise<T
 
 export function setTokens(access: string, refresh: string): void {
     _accessToken = access;
-    localStorage.setItem('mcp_access_token', access);
-    localStorage.setItem('mcp_refresh_token', refresh);
+    localSet(TOKEN_KEY, access);
+    localSet(REFRESH_KEY, refresh);
 }
 
 export function clearTokens(): void {
     _accessToken = null;
     _activeClubId = null;
-    localStorage.removeItem('mcp_access_token');
-    localStorage.removeItem('mcp_refresh_token');
-    localStorage.removeItem('mcp_active_club');
+    localRemove(TOKEN_KEY);
+    localRemove(REFRESH_KEY);
+    localRemove(CLUB_KEY);
 }
 
 export function setActiveClub(id: string): void {
     _activeClubId = id;
-    localStorage.setItem('mcp_active_club', id);
+    localSet(CLUB_KEY, id);
 }
 
 export function getActiveClub(): string | null {
@@ -332,7 +362,7 @@ export const api = {
             }),
         me: () => request<User>('/auth/me'),
         refresh: () => {
-            const rt = localStorage.getItem('mcp_refresh_token');
+            const rt = localGet(REFRESH_KEY);
             return request<{ access_token: string; refresh_token: string }>('/auth/refresh', {
                 method: 'POST',
                 body: JSON.stringify({ refresh_token: rt }),
@@ -345,7 +375,7 @@ export const api = {
                 body: JSON.stringify({ club_id: clubId }),
             }),
         logout: () => {
-            const rt = localStorage.getItem('mcp_refresh_token');
+            const rt = localGet(REFRESH_KEY);
             return request<{ message: string }>('/auth/logout', {
                 method: 'POST',
                 body: JSON.stringify({ refresh_token: rt }),

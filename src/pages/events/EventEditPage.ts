@@ -4,6 +4,7 @@ import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { showToast } from '../../components/Toast';
 import { MapPicker } from '../../components/MapPicker';
+import { QueryErrorState } from '../../components/QueryError';
 import { setPageTitle } from '../../stores/router.store';
 import type { Event } from '../../types';
 
@@ -120,7 +121,7 @@ export class EventEditPage extends ElurComponent {
         ${() => this.eventQuery.status.value === 'pending' && !this.eventQuery.data.value
                 ? html`<div class="form-card"><p>Cargando rodada...</p></div>`
                 : this.eventQuery.status.value === 'error'
-                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar rodada</div>`
+                    ? QueryErrorState({ query: this.eventQuery, message: 'Error al cargar rodada' })
                     : html`
         <form class="form-card" @submit.prevent=${this.form.handleSubmit((values) => this.handleSubmit(values))}>
             <h3 class="form-section-title">Información de la rodada</h3>

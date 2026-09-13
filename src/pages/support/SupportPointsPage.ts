@@ -4,6 +4,7 @@ import { html, signal, ElurComponent, repeat } from '@elurjs/core';
 import { createQuery, createCommand, updateQueryData } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { SkeletonTable } from '../../components/Skeleton';
+import { QueryErrorState } from '../../components/QueryError';
 import { FeatureLocked } from '../../components/FeatureLocked';
 import { formatEnum } from '../../utils/labels';
 import { hasFeature } from '../../stores/plans.store';
@@ -77,7 +78,7 @@ export class SupportPointsPage extends ElurComponent {
             ${() => this.pointsQuery.status.value === 'pending'
                         ? SkeletonTable(5)
                         : this.pointsQuery.status.value === 'error'
-                            ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar puntos de apoyo</div>`
+                            ? QueryErrorState({ query: this.pointsQuery, message: 'Error al cargar puntos de apoyo' })
                             : html`
                     <table class="data-table">
                         <thead><tr><th>Nombre</th><th>Tipo</th><th>Ciudad</th><th>Verificado</th><th>Rating</th><th></th></tr></thead>

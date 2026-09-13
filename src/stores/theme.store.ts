@@ -1,4 +1,5 @@
 import { createStore, persistPlugin } from '@elurjs/core';
+import { legacyAwareStorage } from '../utils/storage';
 
 export type Theme = 'dark' | 'light';
 
@@ -11,7 +12,7 @@ export const themeStore = createStore(
             toggleTheme: () => { s.theme.value = s.theme.value === 'dark' ? 'light' : 'dark'; },
         }),
         plugins: [
-            persistPlugin<{ theme: Theme }>('mc:theme', { storage: localStorage }),
+            persistPlugin<{ theme: Theme }>('bikeros_theme', { storage: legacyAwareStorage }),
         ],
     }
 );

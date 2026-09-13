@@ -12,7 +12,7 @@ import {
     cubeOutline, eyeOffOutline, eyeOutline, flagOutline, hourglassOutline,
     informationCircleOutline, locationOutline, lockClosedOutline, logInOutline, logOutOutline,
     mapOutline, menuOutline, moonOutline, openOutline, peopleCircleOutline, peopleOutline,
-    personAddOutline, personOutline, receiptOutline, saveOutline, sendOutline,
+    personAddOutline, personOutline, receiptOutline, refreshOutline, saveOutline, sendOutline,
     settingsOutline, shieldCheckmarkOutline, sparklesOutline, speedometerOutline, star,
     statsChartOutline, sunnyOutline, timeOutline, trashOutline, trendingUpOutline,
     walletOutline, warningOutline,
@@ -23,6 +23,7 @@ import { refreshSession } from './stores/auth.store';
 import { loadClubs } from './stores/clubs.store';
 import { applyTheme } from './stores/theme.store';
 import { preloadClubLimits } from './stores/plans.store';
+import { initNetworkListeners } from './stores/ui.store';
 
 defineCustomElement();
 addIcons({
@@ -33,7 +34,7 @@ addIcons({
     cubeOutline, eyeOffOutline, eyeOutline, flagOutline, hourglassOutline,
     informationCircleOutline, locationOutline, lockClosedOutline, logInOutline, logOutOutline,
     mapOutline, menuOutline, moonOutline, openOutline, peopleCircleOutline, peopleOutline,
-    personAddOutline, personOutline, receiptOutline, saveOutline, sendOutline,
+    personAddOutline, personOutline, receiptOutline, refreshOutline, saveOutline, sendOutline,
     settingsOutline, shieldCheckmarkOutline, sparklesOutline, speedometerOutline, star,
     statsChartOutline, sunnyOutline, timeOutline, trashOutline, trendingUpOutline,
     walletOutline, warningOutline,
@@ -64,10 +65,12 @@ function App() {
 async function init() {
     applyTheme();
     effect(() => applyTheme());
-    const ok = await refreshSession();
+    initNetworkListeners();
+    const ok = await refreshSession().catch(() => false);
     if (ok) {
-        await loadClubs();
-        await preloadClubLimits();
+        // No dejar que un fallo de red en estas llamadas impida el mount.
+        await loadClubs().catch(() => { });
+        await preloadClubLimits().catch(() => { });
     }
     mount(App(), '#app', { router });
 }

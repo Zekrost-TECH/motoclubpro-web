@@ -3,6 +3,7 @@ import { html, ElurComponent, repeat } from '@elurjs/core';
 import { createQuery } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { SkeletonKpi } from '../../components/Skeleton';
+import { QueryErrorState } from '../../components/QueryError';
 import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
 import { formatEnum } from '../../utils/labels';
@@ -87,6 +88,26 @@ export class DashboardPage extends ElurComponent {
             this.routesQuery.status.value === 'pending'
     }
 
+    // Todas las queries fallaron → un solo estado de error global con
+    // reintento de todo, en vez de 6 skeletons/cards vacías.
+    allFailed() {
+        return this.upcomingEventsQuery.status.value === 'error' &&
+            this.membersQuery.status.value === 'error' &&
+            this.eventsQuery.status.value === 'error' &&
+            this.sosAlertsQuery.status.value === 'error' &&
+            this.eventsReportQuery.status.value === 'error' &&
+            this.routesQuery.status.value === 'error'
+    }
+
+    retryAll() {
+        this.upcomingEventsQuery.refetch();
+        this.membersQuery.refetch();
+        this.eventsQuery.refetch();
+        this.sosAlertsQuery.refetch();
+        this.eventsReportQuery.refetch();
+        this.routesQuery.refetch();
+    }
+
     totalKm() {
         const km = this.eventsReportQuery.data.value?.km;
         return km != null ? km : 0;
@@ -115,6 +136,12 @@ export class DashboardPage extends ElurComponent {
                     </button>
                 </div>
             </div>
+
+            ${() => this.allFailed() ? html`
+                <div class="dashboard-card">
+                    <div class="card-body">${QueryErrorState({ query: { refetch: () => this.retryAll() }, message: 'No se pudieron cargar los datos del dashboard.' })}</div>
+                </div>
+            ` : ''}
 
             <div class="kpi-grid">
                 ${() => this.isLoading()
@@ -179,6 +206,7 @@ export class DashboardPage extends ElurComponent {
                     </div>
                     <div class="card-body">
                         ${() => {
+                if (this.upcomingEventsQuery.status.value === 'error') return QueryErrorState({ query: this.upcomingEventsQuery });
                 if (this.isLoading()) return html`<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div>`;
                 const evts = this.upcomingEventsQuery.data.value;
                 if (!evts?.length) return html`
@@ -213,6 +241,7 @@ export class DashboardPage extends ElurComponent {
                     <div class="card-body">
                         ${() => {
                 const alerts = this.sosAlertsQuery.data.value;
+                if (this.sosAlertsQuery.status.value === 'error') return QueryErrorState({ query: this.sosAlertsQuery });
                 if (this.isLoading()) return html`<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div>`;
                 if (!alerts?.length) {
                     return html`
@@ -236,7 +265,7 @@ export class DashboardPage extends ElurComponent {
                                         <h4>${() => a.user_name || a.userName || a.user_id || 'Usuario desconocido'}</h4>
                                         <p>${() => formatEnum(a.type) || 'SOS'} · ${() => a.timeAgo || 'Hace unos minutos'}</p>
                                     </div>
-                                    ${mapsLink ? html`<a href=${mapsLink} target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><ion-icon name="location-outline"></ion-icon></a>` : ''}
+                                    ${mapsLink ? html`<a href=${mapsLink} target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm"><ion-icon name="location-outline"></ion-icon></a>` : ''}
                                     <span class="badge badge-danger">Activo</span>
                                 </div>
                             `;
@@ -255,6 +284,7 @@ export class DashboardPage extends ElurComponent {
                     </div>
                     <div class="card-body">
                         ${() => {
+                if (this.eventsQuery.status.value === 'error') return QueryErrorState({ query: this.eventsQuery });
                 if (this.isLoading()) return html`<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div>`;
                 const evts = this.recentEvents();
                 if (!evts.length) return html`

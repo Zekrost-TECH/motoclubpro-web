@@ -7,6 +7,7 @@ export const clubsStore = createStore({
     myClubs: [] as Club[],
     activeClub: null as Club | null,
     isLoading: false,
+    error: null as string | null,
 },
     {
         actions: (s) => ({
@@ -49,6 +50,7 @@ function mapClub(c: any): Club {
 
 export async function loadClubs(): Promise<void> {
     clubsStore.isLoading.update(() => true);
+    clubsStore.error.update(() => null);
     try {
         const res = await api.auth.clubs();
         const clubs = (Array.isArray(res) ? res : res.clubs || []).map(mapClub);
@@ -67,6 +69,10 @@ export async function loadClubs(): Promise<void> {
                 invalidateClubQueries();
             }
         }
+    } catch (err) {
+        // No relanzar: un fallo aquí rompía el boot (init() hace await antes
+        // de mount). El selector de club muestra el error con reintento.
+        clubsStore.error.update(() => err instanceof Error ? err.message : 'Error cargando clubs');
     } finally {
         clubsStore.isLoading.update(() => false);
     }

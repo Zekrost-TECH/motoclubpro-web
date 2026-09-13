@@ -4,6 +4,7 @@ import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { openConfirm } from '../../components/ConfirmModal';
 import { SkeletonCard } from '../../components/Skeleton';
+import { QueryErrorState } from '../../components/QueryError';
 import { formatEnum } from '../../utils/labels';
 import { hasFeature } from '../../stores/plans.store';
 import { createDebounced } from '../../utils/debounce';
@@ -94,7 +95,7 @@ export class RoutesListPage extends ElurComponent {
         ${() => this.routesQuery.status.value === 'pending'
                 ? html`<div class="cards-grid">${SkeletonCard()}${SkeletonCard()}${SkeletonCard()}</div>`
                 : this.routesQuery.status.value === 'error'
-                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar rutas</div>`
+                    ? QueryErrorState({ query: this.routesQuery, message: 'Error al cargar rutas' })
                     : html`
                 <div class="cards-grid">
                     ${() => {

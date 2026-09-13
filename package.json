@@ -8,7 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@elurjs/core": "^3.6.2",
+    "@elurjs/core": "^3.7.0-beta.0",
     "@elurjs/query": "^1.6.0",
     "@elurjs/vite-plugin-elur": "^2.1.0",
     "@types/node": "^26.0.0",

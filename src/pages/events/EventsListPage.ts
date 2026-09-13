@@ -4,6 +4,7 @@ import { createQuery, createCommand, invalidateQueries } from '@elurjs/query';
 import { api } from '../../services/api.service';
 import { openConfirm } from '../../components/ConfirmModal';
 import { SkeletonTable } from '../../components/Skeleton';
+import { QueryErrorState } from '../../components/QueryError';
 import { formatEnum } from '../../utils/labels';
 import { createDebounced } from '../../utils/debounce';
 import { formatLocalDate } from '../../utils/date';
@@ -103,7 +104,7 @@ export class EventsListPage extends ElurComponent {
             ${() => this.eventsQuery.status.value === 'pending'
                 ? SkeletonTable(5)
                 : this.eventsQuery.status.value === 'error'
-                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar rodadas</div>`
+                    ? QueryErrorState({ query: this.eventsQuery, message: 'Error al cargar rodadas' })
                     : html`
                     <table class="data-table">
                         <thead>

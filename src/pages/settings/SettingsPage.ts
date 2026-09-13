@@ -5,6 +5,7 @@ import { activeClub } from '../../stores/clubs.store';
 import { setPageTitle } from '../../stores/router.store';
 import { showToast } from '../../components/Toast';
 import { SkeletonCard } from '../../components/Skeleton';
+import { QueryErrorState } from '../../components/QueryError';
 import { themeStore } from '../../stores/theme.store';
 import { PRIVACY_POLICY_URL } from '../../config/urls';
 
@@ -130,7 +131,7 @@ export class SettingsPage extends ElurComponent {
         ${() => this.clubQuery.status.value === 'pending'
                 ? html`<div class="form-card">${SkeletonCard()}</div>`
                 : this.clubQuery.status.value === 'error'
-                    ? html`<div class="alert alert-error"><ion-icon name="alert-circle-outline"></ion-icon> Error al cargar configuración</div>`
+                    ? QueryErrorState({ query: this.clubQuery, message: 'Error al cargar configuración' })
                     : html`
                     <form class="form-card" @submit.prevent=${this.form.handleSubmit((values) => this.handleSubmit(values))}>
                         <h3 class="form-section-title">Información general</h3>

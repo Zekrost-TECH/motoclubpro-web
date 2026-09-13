@@ -43,6 +43,13 @@ export class PaymentResultPage extends ElurComponent {
                 this.status.update(() => 'approved');
                 return;
             }
+            // Si la query falla de forma sostenida (red/API caída), no
+            // esperar los 30s completos — fallar antes con mensaje claro.
+            if (this.subscriptionQuery.status.value === 'error' && this.attempts >= 3) {
+                if (this._timer !== null) window.clearInterval(this._timer);
+                this.status.update(() => 'failed');
+                return;
+            }
             if (this.attempts >= 10) {
                 if (this._timer !== null) window.clearInterval(this._timer);
                 this.status.update(() => 'timeout');

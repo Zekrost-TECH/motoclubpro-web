@@ -1,8 +1,9 @@
 import { router } from '../../router';
 import { setPageTitle } from '../../stores/router.store';
 import { html, ElurComponent } from '@elurjs/core';
-import { myClubs, switchClub } from '../../stores/clubs.store';
+import { clubsStore, myClubs, switchClub, loadClubs } from '../../stores/clubs.store';
 import { themeStore } from '../../stores/theme.store';
+import { QueryErrorState } from '../../components/QueryError';
 
 export class ClubSelectorPage extends ElurComponent {
     private router = router;
@@ -26,6 +27,18 @@ export class ClubSelectorPage extends ElurComponent {
                     <p>Elige el club que quieres administrar</p>
                 </div>
                 <div class="club-list">
+                    ${() => {
+                if (clubsStore.error.value) {
+                    return QueryErrorState({ query: { refetch: () => { loadClubs(); } }, message: clubsStore.error.value });
+                }
+                if (clubsStore.isLoading.value) {
+                    return html`<div class="empty"><p>Cargando clubs...</p></div>`;
+                }
+                if (!(myClubs.value || []).length) {
+                    return html`<div class="empty"><h4>Sin clubs</h4><p>No perteneces a ningún club todavía.</p></div>`;
+                }
+                return '';
+            }}
                     ${() => (myClubs.value || []).map(club => html`
                         <button class="club-card" @click=${() => this.selectClub(club.id)}>
                             <div class="club-card-icon">
